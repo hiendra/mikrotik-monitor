@@ -1,0 +1,34 @@
+# ==================== KREDENSIAL — JANGAN DI-COMMIT ====================
+secrets.h
+**/secrets.h
+
+# ==================== BACKUP LOKAL ====================
+backups/
+*.zip
+*.7z
+*.rar
+
+# ==================== ARTEFAK BUILD ARDUINO ====================
+build/
+*.bin
+*.elf
+*.map
+*.o
+*.d
+*.hex
+*.tmp
+
+# ==================== EDITOR / TOOL ====================
+.freebuff/
+.vscode/
+.idea/
+*.bak
+*~
+
+# ==================== SAMPAH OS ====================
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# File kosong yang tak sengaja terbentuk
+/storage

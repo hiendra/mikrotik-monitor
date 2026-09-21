@@ -6,7 +6,7 @@ Ada 3 lapis pengamanan; sebaiknya pakai ketiganya.
 | Lapis | Alat | Melindungi dari |
 |---|---|---|
 | 1 | **Git lokal** (folder `.git` di project) | salah edit, file tertimpa, ingin balik ke versi lama |
-| 2 | **Zip bertanggal** (`backup.ps1`) | folder project terhapus / corrupt |
+| 2 | **Zip bertanggal** (`backup.ps1`, otomatis tiap hari 23:00) | folder project terhapus / corrupt |
 | 3 | **GitHub privat** | komputer rusak, hilang, atau diganti |
 
 ---
@@ -67,17 +67,69 @@ Hasil: `%USERPROFILE%\MikroTikMonitor-Backups\mikrotik_monitor_<tanggal>_<jam>.z
 ⚠️ **Arsip zip ini memuat `secrets.h` (kredensial asli).** Jangan diunggah ke
 internet atau dibagikan.
 
-### Mau otomatis tiap hari? (opsional)
+### Otomatis tiap hari — SUDAH TERPASANG ✅
 
-Jalankan di PowerShell **as Administrator**:
+Task Scheduler sudah diatur dan **sudah diuji berhasil**:
+
+| Item | Nilai |
+|---|---|
+| Nama task | `MikroTik Monitor Backup Harian` |
+| Jadwal | Setiap hari, **23:00** |
+| Yang dijalankan | `powershell -NoProfile -ExecutionPolicy Bypass -File "C:\temp\mikrotik_monitor\backup.ps1"` |
+| Dijalankan sebagai | pengguna `my_nuc` (saat sedang login) |
+| Log hasil | `%USERPROFILE%\MikroTikMonitor-Backups\backup.log` |
+| Kalau jadwal terlewat | **menyusul** saat komputer dinyalakan lagi (`StartWhenAvailable`) |
+| Saat pakai baterai | tetap jalan (tidak diblokir `DisallowStartIfOnBatteries`) |
+| Batas waktu | 30 menit (`ExecutionTimeLimit`) |
+
+**Cek jadwal berikutnya:**
 
 ```powershell
-$act = New-ScheduledTaskAction -Execute 'powershell.exe' `
-  -Argument '-NoProfile -ExecutionPolicy Bypass -File "C:\temp\mikrotik_monitor\backup.ps1"'
-$trg = New-ScheduledTaskTrigger -Daily -At 8pm
-Register-ScheduledTask -TaskName 'Backup MikroTik Monitor' -Action $act -Trigger $trg `
-  -Description 'Backup harian project MikroTik Monitor'
+schtasks /query /tn "MikroTik Monitor Backup Harian"
 ```
+
+**Jalankan sekarang (untuk mengetes):**
+
+```powershell
+schtasks /run /tn "MikroTik Monitor Backup Harian"
+```
+
+**Lihat hasil terakhir** — kolom *Last Result* harus `0` (= sukses):
+
+```powershell
+schtasks /query /tn "MikroTik Monitor Backup Harian" /v /fo LIST | findstr /i "Last Result Last Run Next Run"
+```
+
+Atau lewat tampilan: tekan `Win+R` → ketik `taskschd.msc` → cari task-nya di
+*Task Scheduler Library*.
+
+**Ubah jam backup / pasang ulang task:**
+
+Skrip `install_backup_task.ps1` mendaftarkan task dengan setelan yang benar
+(termasuk `StartWhenAvailable` dan izin baterai). Aman dijalankan berulang kali.
+
+```powershell
+cd C:\temp\mikrotik_monitor
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install_backup_task.ps1 -Jam 22:30
+```
+
+Pakai skrip ini juga kalau nanti **pindah komputer**, folder project dipindah,
+atau task-nya terhapus — jalankan sekali dari folder project yang baru, dan
+task akan menyesuaikan sendiri ke lokasi itu.
+
+**Matikan backup otomatis:**
+
+```powershell
+schtasks /delete /tn "MikroTik Monitor Backup Harian" /f
+```
+
+> **Catatan:** task ini berjalan **saat kamu login** (mode *Interactive only*),
+> jadi tidak berjalan kalau kamu log out dari Windows. Kalau komputer mati pada
+> jam 23:00, backup **menyusul sendiri** begitu komputer dinyalakan dan kamu
+> login — jadi backup harian tetap tidak hilang.
+>
+> Ingat juga: backup hanya menyalin isi folder project. Pastikan hasil kerja
+> terbaru sudah **disimpan di folder itu**, bukan masih ada di cache Arduino IDE.
 
 ---
 
@@ -146,6 +198,6 @@ git checkout <hash> -- mikrotik_monitor.ino # kembalikan file itu
 | Kapan | Lakukan |
 |---|---|
 | Setiap selesai mengubah kode | `git add -A && git commit -m "..."` |
-| Setiap akhir sesi kerja | `.\backup.ps1` |
+| Otomatis tiap hari 23:00 | zip dibuat sendiri oleh Task Scheduler |
 | Minimal seminggu sekali | `git push` |
 | Sebelum eksperimen besar | `git commit` dulu, supaya bisa dibalik |

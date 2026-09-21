@@ -14,6 +14,10 @@
 # folder profil pengguna yang sudah terbukti bisa.
 #
 # Skrip ini menyimpan 20 backup terbaru dan menghapus yang lebih lama.
+#
+# Otomatis: task "MikroTik Monitor Backup Harian" menjalankan skrip ini
+# tiap hari (lihat BACKUP_GUIDE.md). Catatan hasilnya ada di
+# %USERPROFILE%\MikroTikMonitor-Backups\backup.log
 # ============================================================
 
 $ErrorActionPreference = 'Stop'
@@ -22,16 +26,29 @@ $src     = (Resolve-Path -LiteralPath $PSScriptRoot).Path
 $destDir = Join-Path $env:USERPROFILE 'MikroTikMonitor-Backups'
 $stamp   = Get-Date -Format 'yyyyMMdd_HHmmss'
 $zip     = Join-Path $destDir ("mikrotik_monitor_{0}.zip" -f $stamp)
-
-Write-Host ""
-Write-Host "=== Backup MikroTik Monitor ===" -ForegroundColor Cyan
-Write-Host "Sumber : $src"
-Write-Host "Tujuan : $zip"
+$logFile = Join-Path $destDir 'backup.log'
 
 New-Item -ItemType Directory -Force -Path $destDir | Out-Null
 if (-not (Test-Path -LiteralPath $destDir)) {
   throw "Folder tujuan tidak bisa dibuat: $destDir"
 }
+
+# --- Log untuk backup otomatis (Task Scheduler) ---
+# Saat dijalankan tanpa jendela, hasilnya tetap bisa diperiksa dari backup.log.
+# Log dipangkas otomatis kalau sudah lebih dari 1 MB.
+function Stop-Log { try { Stop-Transcript | Out-Null } catch { } }
+trap { Write-Host "ERROR: $_" -ForegroundColor Red; Stop-Log; exit 1 }
+
+if ((Test-Path -LiteralPath $logFile) -and ((Get-Item -LiteralPath $logFile).Length -gt 1MB)) {
+  Remove-Item -LiteralPath $logFile -Force
+}
+try { Start-Transcript -Path $logFile -Append | Out-Null } catch { }
+
+Write-Host ""
+Write-Host "=== Backup MikroTik Monitor ===" -ForegroundColor Cyan
+Write-Host "Sumber : $src"
+Write-Host "Tujuan : $zip"
+Write-Host "Waktu  : $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -84,3 +101,5 @@ Write-Host ""
 Write-Host "CATATAN: arsip ini memuat secrets.h (kredensial asli)." -ForegroundColor Yellow
 Write-Host "Jangan diunggah ke internet atau dibagikan ke orang lain." -ForegroundColor Yellow
 Write-Host ""
+
+Stop-Log

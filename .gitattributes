@@ -1,0 +1,18 @@
+# Normalisasi line-ending agar isi file konsisten di semua komputer
+* text=auto
+
+# Source Arduino & header -> CRLF (khas Windows, cocok dengan Arduino IDE)
+*.h      text eol=crlf
+*.ino    text eol=crlf
+*.ps1    text eol=crlf
+*.bat    text eol=crlf
+
+# Dokumen -> LF
+*.md     text eol=lf
+
+# File biner jangan diubah
+*.png    binary
+*.jpg    binary
+*.zip    binary
+*.bin    binary
+*.elf    binary

@@ -21,8 +21,8 @@ tema **Dark Cyber** (navy + aksen cyan neon + kartu glass).
 
 | Sumber | Fungsi |
 |---|---|
-| MikroTik API TCP **8728** (`admin` / `spadmin!23`) | resource, identity, interface list, health, `/ppp/active` |
-| SNMP v2c (community `monitoring`, port 161) | CPU, memori, uptime, traffic counter |
+| MikroTik API TCP **8728** (user & password dibaca dari `secrets.h`) | resource, identity, interface list, health, `/ppp/active` |
+| SNMP v2c (community dibaca dari `secrets.h`, port 161) | CPU, memori, uptime, traffic counter |
 | Ping lokal | gateway + internet (Cloudflare) |
 
 ## 3. Menu (sidebar, 6 halaman)

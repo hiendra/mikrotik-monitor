@@ -14,7 +14,8 @@
 #endif
 
 // Fallback bila secrets.h belum dibuat: build tetap jalan, tetapi perangkat
-// tidak bisa konek (WiFi/IP/password kosong) sampai diisi lewat Settings.
+// tidak bisa konek (WiFi/IP/user/password/SNMP kosong) sampai diisi lewat
+// Settings. Sengaja dibiarkan kosong: nilai asli tidak boleh ikut ter-commit.
 #ifndef WIFI_SSID
   #define WIFI_SSID       ""
 #endif
@@ -22,7 +23,7 @@
   #define WIFI_PASSWORD   ""
 #endif
 #ifndef SNMP_COMMUNITY
-  #define SNMP_COMMUNITY  "monitoring"
+  #define SNMP_COMMUNITY  ""
 #endif
 #ifndef SNMP_PORT
   #define SNMP_PORT       161
@@ -31,7 +32,7 @@
   #define MIKROTIK_IP     ""
 #endif
 #ifndef MT_USER
-  #define MT_USER         "admin"
+  #define MT_USER         ""
 #endif
 #ifndef MT_PASS
   #define MT_PASS         ""

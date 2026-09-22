@@ -137,12 +137,26 @@ schtasks /delete /tn "MikroTik Monitor Backup Harian" /f
 
 Repo lokal sudah siap. Tinggal membuat repo di GitHub lalu push.
 
-**a. Buat repository baru di <https://github.com/new>**
+**a. Isi identitas Git (sekali saja).**
+
+Di komputer ini `user.name` dan `user.email` **masih kosong**, jadi commit yang
+sudah ada memakai identitas sementara. Isi dengan akun GitHub-mu supaya commit
+berikutnya terhubung ke profilmu:
+
+```powershell
+git config --global user.name "Nama Kamu"
+git config --global user.email "email@contoh.com"
+```
+
+Email sebaiknya sama dengan email akun GitHub (atau email `noreply` dari GitHub)
+supaya commit dihitung sebagai milikmu.
+
+**b. Buat repository baru di <https://github.com/new>**
 - Nama: `mikrotik-monitor`
 - Visibilitas: **Private**
 - Jangan centang "Add a README" (repo sudah punya file)
 
-**b. Hubungkan & kirim (push):**
+**c. Hubungkan & kirim (push):**
 
 ```powershell
 cd C:\temp\mikrotik_monitor
@@ -150,17 +164,30 @@ git remote add origin https://github.com/USERNAME/mikrotik-monitor.git
 git push -u origin main
 ```
 
-Kalau ada GitHub CLI (`gh`), bisa lebih singkat:
+> Saat `git push` pertama kali, Windows akan memunculkan jendela **sign-in GitHub**
+> (Git Credential Manager). Setelah masuk sekali, kredensial tersimpan dan push
+> berikutnya tidak menanyakan lagi.
+
+> **Alternatif lebih singkat:** GitHub CLI (`gh`) **tidak terpasang** di komputer
+> ini. Kalau mau dipakai, pasang dulu dengan `winget install GitHub.cli`, baru:
+>
+> ```powershell
+> gh auth login
+> gh repo create mikrotik-monitor --private --source . --push
+> ```
+
+**d. Setelah terhubung, backup ke cloud tiap selesai kerja:**
 
 ```powershell
-gh auth login
-gh repo create mikrotik-monitor --private --source . --push
+git add -u          # hanya file yang SUDAH terlacak
 ```
 
-**c. Setelah terhubung, backup ke cloud tiap selesai kerja:**
+> **Kenapa bukan `git add -A`?** `-A` ikut menyapu file baru yang bukan bagian
+> project (misalnya `tuneup.ps1` atau skrip sekali pakai). Pakai `git add -u` untuk
+> memperbarui file yang sudah ada, lalu tambahkan file baru secara eksplisit:
+> `git add nama-file-baru.h`.
 
 ```powershell
-git add -A
 git commit -m "update"
 git push
 ```
@@ -200,4 +227,5 @@ git checkout <hash> -- mikrotik_monitor.ino # kembalikan file itu
 | Setiap selesai mengubah kode | `git add -A && git commit -m "..."` |
 | Otomatis tiap hari 23:00 | zip dibuat sendiri oleh Task Scheduler |
 | Minimal seminggu sekali | `git push` |
+| Setelah ganti komputer | jalankan `install_backup_task.ps1` lagi |
 | Sebelum eksperimen besar | `git commit` dulu, supaya bisa dibalik |

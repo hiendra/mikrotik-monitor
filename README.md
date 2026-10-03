@@ -104,3 +104,51 @@ mikrotik_monitor/
 - Maks 80 interface / 80 user PPP (array statis, ~50 KB RAM).
 - Chart 60 titik per interface; overflow 32-bit dihindari (aritmetika 64-bit).
 - Series chart kecil diberi tinggi minimum 3px + urutan gambar terbesar-dulu.
+
+## 11. Ops Server & Web Hosting
+
+Perkakas pendamping untuk server tempat dashboard ini berjalan (bukan bagian
+firmware ESP32). Semuanya **read-only** kecuali yang ditandai.
+
+| Berkas | Fungsi |
+|---|---|
+| `cek-semua.ps1` | Satu perintah: menjalankan audit server + verifikasi domain, lalu menulis `laporan-ops.txt` |
+| `audit-server.ps1` | Audit keamanan & performa: port terbuka, TLS, header keamanan, cache aset, kompresi, API tanpa auth |
+| `cek-domain.ps1` | Verifikasi `clusternet.my.id` sudah lewat Cloudflare (`Server`/`cf-ray`) atau masih jalur langsung |
+| `kumpulkan-info-server.sh` | Dijalankan **di host** (Linux/ZimaOS): CPU, RAM, disk, SMART, Docker, log error |
+| `REKOMENDASI-OPTIMASI-SERVER.md` | Temuan audit + perbaikan berurutan P0→P2 (RouterOS, Caddy, portproxy) |
+| `pindai-layanan.ps1` | Memindai host ZimaOS: port mana yang hidup, layanan apa itu (Immich, Grafana, ttyd, …), lalu mencetak blok Caddyfile siap tempel |
+| `zima-hosting/panel-kelola.html` | **Panel visual** untuk mengatur pemetaan nama domain → layanan, tanpa mengedit Caddyfile dengan tangan (klik dua kali, jalan di browser, tanpa server) |
+| `buka-panel.mjs` | Menyalakan panel pengelola di **alamat tetap** `http://127.0.0.1:8788/panel-kelola.html` lalu membukanya di browser — supaya tidak bergantung pada port acak fitur preview yang berubah tiap sesi |
+| `zima-hosting/tautan-balik-grafana.mjs` | Menambahkan tautan "Kembali ke ClusterNet" ke **semua** dasbor Grafana; aman diulang, `--kering` untuk melihat rencananya saja |
+| `zima-hosting/` | Paket web hosting: Cloudflare Tunnel + Caddy, tanpa port forwarding |
+| `zima-hosting/CHECKLIST-CLOUDFLARE.md` | Checklist cetak tahap terakhir: token tunnel, Public Hostname, Access, dan pembersihan port forwarding lama |
+| `zima-hosting/CATATAN-KENDALA.md` | Catatan kendala: gejala → sebab → solusi → verifikasi (Grafana kosong, SNMP MikroTik, cara masuk ke router/host) |
+| `zima-hosting/PANDUAN-KUMA-NTFY.md` | Notifikasi **Uptime Kuma** ke iPhone lewat ntfy, memakai **topik terpisah** dari topik MikroTik |
+| `zima-hosting/uji-kuma-ntfy.py` | Membuktikan kanal Kuma → ntfy hidup: status terakhir tiap monitor + apakah pesan asli dari Kuma benar-benar tiba |
+| `uji-ntfy.py` | Uji ujung-ke-ujung kanal **router** → ntfy lewat router yang nyata (menjalankan `ntfy-kirim` sekali, lalu membaca penandanya dari server) |
+| `uji-semua-ntfy.py` | Menguji **semua** kanal ntfy sekaligus (router, Kuma, udara × server utama/cadangan/LAN): baca topik, tulis probe, lalu baca kembali; `--json`, `--hanya`, `--tanpa-kirim` |
+| `CATATAN-KERJA-2026-09-27.md` | Jurnal kerja 27 Sep 2026: kronologi perubahan, jejak berkas (repo & host), jebakan yang terbukti, dan sisa pekerjaan |
+| `udara/notif-udara.sh` | Mengawasi sensor kualitas udara `192.168.20.13:88`: kirim **ntfy** saat sensor mati >5 menit (dengan kabar pulih) atau saat AQI memburuk |
+| `udara/pasang-notif-udara.sh` | Memasang watcher di atas sebagai systemd timer tiap 1 menit (ZimaOS tanpa cron); idempoten |
+| `udara/README.md` | Topik ntfy, ambang, cara pasang/langganan/mencopot, dan jebakan `priority` JSON yang harus berupa angka |
+| `validasi-hosting.mjs` | Memeriksa **konsistensi** paket hosting secara offline (Caddyfile vs compose vs `.env` vs panduan) sebelum dipasang |
+| `validasi-hosting.mjs --uji` | Uji diri: menyuntikkan 14 kerusakan ke salinan sementara untuk membuktikan pemeriksanya benar-benar bisa menolak |
+
+Mulai dari sini:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\cek-semua.ps1
+```
+
+Sebelum memasang paket hosting, pastikan berkasnya masih saling cocok (tanpa
+Docker, tanpa jaringan):
+
+```bash
+node validasi-hosting.mjs         # periksa paket (kode keluar 1 = ada GAGAL)
+node validasi-hosting.mjs --uji   # uji pemeriksanya sendiri
+```
+
+Catatan akses: API MikroTik (port 8728) sebaiknya hanya dijangkau dari LAN.
+Bila ESP32 monitor dijalankan dari luar jaringan ini, tambahkan IP asalnya di
+`/ip service set api address=...` agar tidak perlu membuka API ke publik.

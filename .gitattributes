@@ -7,8 +7,18 @@
 *.ps1    text eol=crlf
 *.bat    text eol=crlf
 
-# Dokumen -> LF
+# Dokumen & halaman -> LF
 *.md     text eol=lf
+*.html   text eol=lf
+# Skrip Node (validasi-hosting.mjs) -> LF agar sama di semua sistem
+*.mjs    text eol=lf
+
+# Berkas yang dijalankan di sisi Linux (ZimaOS) -> wajib LF
+*.sh        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+Caddyfile   text eol=lf
+.env.example text eol=lf
 
 # File biner jangan diubah
 *.png    binary

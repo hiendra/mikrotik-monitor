@@ -18,6 +18,29 @@ build/
 *.hex
 *.tmp
 
+# ==================== TOKEN & RAHASIA HOSTING ====================
+zima-hosting/.env
+.env
+
+# ==================== SALINAN SEMENTARA UJI VALIDASI ====================
+.tmp-uji-validasi/
+
+# ==================== HASIL PINDAI LAYANAN ====================
+hasil-layanan.json
+pindai-penuh.log
+
+# ==================== HASIL AUDIT SERVER ====================
+baseline.json
+sebelum.json
+sesudah.json
+hasil-domain.json
+laporan-ops.txt
+info-server.txt
+
+# ==================== LINGKUNGAN PYTHON LOKAL ====================
+venv/
+**/venv/
+
 # ==================== EDITOR / TOOL ====================
 .freebuff/
 .vscode/
@@ -32,3 +55,52 @@ Desktop.ini
 
 # File kosong yang tak sengaja terbentuk
 /storage
+
+# Token deployer panel (jangan commit)
+zima-hosting/.env.deploy-token
+
+# ==================== SPECIFIC (cli local state & rahasia lokal) ====================
+.specific/
+specific.local
+
+# ==================== MESHTASTIC MONITOR (artefak runtime) ====================
+# Log, status, dan penanda yang lahir saat layanan berjalan. Semuanya khusus
+# mesin ini, jadi tidak boleh ikut ter-commit. Berkas sumber (skrip, unit,
+# dashboard, alert) TIDAK diabaikan.
+meshtastic-monitor/__pycache__/
+# Pycache subfolder (mis. lacak-kerja/) juga harus diabaikan
+**/__pycache__/
+meshtastic-monitor/*.log
+meshtastic-monitor/notif-meshtastic-state.json
+meshtastic-monitor/bot-meshtastic-state.json
+# Catatan site survey/drive test bot (<state>-kontak.json). Berisi kontak radio
+# mesin ini; menimpanya dari mesin lain memicu data uji jaringan yang keliru.
+meshtastic-monitor/*kontak.json
+# Penanda "bot dimatikan lewat halaman" (<state>-kendali.json). Milik MESIN yang
+# menjalankannya: kalau ikut ter-commit, bot di host lain bisa mulai dalam
+# keadaan terbungkam tanpa ada yang menyadari sebabnya.
+meshtastic-monitor/*kendali.json
+meshtastic-monitor/reset-terakhir.json
+meshtastic-monitor/catat-node.csv
+meshtastic-monitor/*.tgz
+# Basis data pelacakan layar: lahir saat lacak_node.py berjalan (runtime)
+meshtastic-monitor/lacak-kerja/lacak.sqlite3
+
+# ==================== BERKAS KERJA SEMENTARA ====================
+# Skrip/keluaran sekali pakai di akar repo (pembaca keluaran zima-shell,
+# potongan konfigurasi yang diuji, dsb). Tidak pernah jadi sumber; jangan
+# sampai ikut ter-commit.
+.tmp-*
+
+# ==================== ARTEFAK UJI & PENERAPAN ====================
+# Keduanya lahir saat MENJALANKAN alat, bukan berkas sumber: salinan HTML untuk
+dilihat di peramban (uji-halaman-meshtastic.py) dan log penerapan ke ZimaOS
+(pasang-ke-zima.sh). Salinan sementara uji validasi sudah diabaikan di atas.
+.tmp-uji-halaman/
+.keluaran-pasang.log
+
+# ==================== FIRMWARE MESHTASTIC (checkout terpisah) ====================
+# Salinan repo firmware (fork richardvsw/firmware) untuk membangun varian
+# handheld-s3. Di dalamnya ada repo git SENDIRI, jadi git hanya akan melihatnya
+# sebagai satu direktori tak terawat: '?? firmware/'. Jangan pernah pakai
+# 'git add -A' di repo ini; tambahkan berkas firmware satu per satu bila perlu.

@@ -1,0 +1,172 @@
+# ============================================================
+# Caddyfile - router berdasarkan nama host
+# ============================================================
+# Berjalan di dalam container, TIDAK menerbitkan sertifikat sendiri:
+# TLS sudah ditangani Cloudflare di sisi edge (auto_https off).
+#
+# PENTING: semua alamat situs WAJIB berawalan http:// karena cloudflared
+# menyambung ke Caddy lewat HTTP port 80. Tanpa awalan http://, Caddy
+# menaruh blok situs di port 443 dan semua permintaan dari tunnel
+# jatuh ke fallback :80 (jawabannya 404 "gunakan nama domain yang benar").
+#
+# Menambah layanan baru = tambah satu blok di bawah. Selesai.
+# Tidak perlu port forwarding, tidak perlu mengubah DNS atau tunnel.
+# ============================================================
+
+{
+	admin off
+	auto_https off
+	# ganti bila ingin melihat log akses:
+	# log { output file /data/access.log }
+}
+
+# ------------------------------------------------------------
+# Pengaturan yang dipakai semua layanan
+# ------------------------------------------------------------
+(http-umum) {
+	encode zstd gzip
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy strict-origin-when-cross-origin
+		Cross-Origin-Opener-Policy same-origin
+		# HSTS aman di sini karena seluruh trafik ke pengunjung sudah HTTPS
+		# di edge Cloudflare. Hapus baris ini bila ada subdomain yang
+		# sengaja dilayani lewat HTTP polos.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Permissions-Policy "geolocation=(), camera=(), microphone=(), payment=()"
+		-Server
+	}
+}
+
+# ------------------------------------------------------------
+# 1. SITUS WEB UTAMA (clusternet.my.id)
+#    Taruh berkas situs di folder ./situs (di-mount ke /srv/situs)
+# ------------------------------------------------------------
+http://clusternet.my.id, http://www.clusternet.my.id {
+	import http-umum
+	# CSP dipasang HANYA di sini. Jangan jadikan global: UI ZimaOS (zima.)
+	# memuat banyak sumber inline dan akan rusak bila dibatasi seketat ini.
+	header Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'self'"
+	root * /srv/situs
+	file_server
+	# Kalau situs ini sebenarnya aplikasi (Node/Python/PHP), ganti
+	# dua baris di atas dengan satu baris berikut:
+	#   reverse_proxy webapp:3000
+}
+
+# ------------------------------------------------------------
+# 2. APLIKASI DI ZIMAOS
+#    Ganti 192.168.145.252 dengan IP ZimaOS bila berbeda.
+# ------------------------------------------------------------
+
+# Antarmuka admin ZimaOS. Lindungi dengan Cloudflare Access!
+http://zima.clusternet.my.id {
+	import http-umum
+	reverse_proxy 192.168.145.252:8280
+}
+
+# AdGuard Home - pemblokir iklan/pelacak DNS (UI web, port 8080).
+# Catatan: sebelumnya pernah dinamedakan files.clusternet.my.id.
+http://adguard.clusternet.my.id {
+	import http-umum
+	reverse_proxy 192.168.145.252:8080
+}
+
+# Immich - galeri foto (port 2283). Wajib di balik Cloudflare Access,
+# dan set "External domain" di pengaturan Immich ke alamat di bawah supaya
+# tautan berbagi tidak menunjuk alamat internal.
+# Catatan: Cloudflare gratis menolak unggahan >100 MB, jadi video besar
+# sebaiknya diunggah dari LAN (lihat Langkah 6 di panduan).
+http://immich.clusternet.my.id {
+	import http-umum
+	reverse_proxy 192.168.145.252:2283
+}
+
+# Grafana - dasbor (port 3003). Wajib di balik Cloudflare Access.
+http://grafana.clusternet.my.id {
+	import http-umum
+	reverse_proxy 192.168.145.252:3003
+}
+
+# Uptime Kuma - pemantauan layanan + halaman status publik (port 3001).
+# Halaman status (/status/<slug>) memang untuk publik, tetapi /dashboard
+# adalah panel admin - sebaiknya dilindungi Cloudflare Access.
+# Catatan: akses langsung http://<IP-WAN>:3001 (port forwarding) SENGAJA
+# dibiarkan aktif sebagai jalur cadangan bila DNS/tunnel bermasalah.
+# Keduanya menuju container yang sama, jadi data dan login tetap sinkron.
+# Bedanya: lewat IP:port tidak terenkripsi (HTTP polos), tanpa Access.
+http://kuma.clusternet.my.id {
+	import http-umum
+	# Uptime Kuma menolak /status tanpa slug (404). Arahkan alamat pendek ini
+	# ke halaman status yang sudah ada supaya tetap enak dibagikan. Hanya dua
+	# jalur persis ini yang dialihkan: /status/<slug> dan /status/<slug>/rss
+	# tidak tersentuh. redir dijalankan Caddy sebelum reverse_proxy.
+	redir /status /status/mesh 302
+	redir /status/ /status/mesh 302
+	reverse_proxy 192.168.145.252:3001
+}
+
+# Aplikasi billing PHP "Masuk - CLUSTERNET" (Apache + PHP, port 8082).
+# Ini halaman login admin, jadi wajib di balik Cloudflare Access.
+# Catatan: sebelumnya pernah dinamedakan portal.clusternet.my.id.
+http://billing.clusternet.my.id {
+	import http-umum
+	reverse_proxy 192.168.145.252:8082
+}
+
+# ------------------------------------------------------------
+# SENGAJA TIDAK DIPETAKAN (jangan diaktifkan tanpa Access)
+# ------------------------------------------------------------
+# Port berikut ditemukan hidup saat pemindaian, tetapi tidak diberi nama
+# domain karena berbahaya bila terbuka ke internet:
+#
+#   7681, 7682  terminal web (ttyd) - siapa pun bisa masuk ke shell server
+#   4096        layanan ber-HTTP-Basic "Secure Area" (identitas belum jelas)
+#   2284        instance Immich yang sama seperti port 2283 (ganda)
+#   4403, 8007, 8286  bukan HTTP, tidak bisa diberi nama domain
+#
+# Bila benar-benar butuh terminal dari luar, lewati ZeroTier/Tailscale atau
+# pakai Cloudflare Access + kebijakan email, bukan hostname publik terbuka:
+# http://terminal.clusternet.my.id {
+# 	import http-umum
+# 	reverse_proxy 192.168.145.252:7681
+# }
+
+# ------------------------------------------------------------
+# 3. Subdomain yang belum dipetakan -> jawab rapi, jangan bocor
+#    (wildcard satu tingkat saja)
+# ------------------------------------------------------------
+# Air Quality Monitor ESP32 - halaman kualitas udara (port 88).
+# Nama pendek "aqi" = Air Quality Index; keduanya menuju perangkat yang sama
+# (192.168.20.13:88). Sengaja TIDAK dipasang Cloudflare Access karena isinya
+# data lingkungan publik yang memang ingin dibagikan.
+http://udara.clusternet.my.id, http://aqi.clusternet.my.id {
+	import http-umum
+	reverse_proxy 192.168.20.13:88
+}
+
+# Meshtastic Node Monitor - halaman data node (gateway, node RF langsung,
+# node lewat MQTT). Exporter-nya systemd di host ZimaOS, bukan lagi di mesin
+# kerja Windows, jadi subdomain ini hidup 24/7 tanpa bergantung PC menyala.
+# Alamat LAN host (192.168.20.36) ditulis langsung, bukan lewat akhiran
+# container, supaya bisa diuji dari LAN dengan cara yang sama seperti `udara`.
+# Halaman ini memuat koordinat GPS tiap node dan sengaja dibiarkan PUBLIK
+# (tanpa Cloudflare Access) - sesuai keputusan pemilik, sama seperti `udara`.
+http://meshid.clusternet.my.id {
+	import http-umum
+	reverse_proxy 192.168.20.36:9208
+}
+
+http://*.clusternet.my.id {
+	import http-umum
+	respond "Subdomain ini belum dipetakan di server." 404
+}
+
+# ------------------------------------------------------------
+# 4. Fallback untuk akses langsung lewat IP/port LAN
+# ------------------------------------------------------------
+:80 {
+	import http-umum
+	respond "Web router aktif. Gunakan nama domain yang benar." 404
+}

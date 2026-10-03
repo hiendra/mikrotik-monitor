@@ -1,0 +1,53 @@
+{
+  "diperbarui": "2026-10-03",
+  "layanan": [
+    {
+      "judul": "Panel ZimaOS",
+      "ikon": "🖥",
+      "url": "https://zima.clusternet.my.id",
+      "deskripsi": "Pusat kendali server: aplikasi, penyimpanan, dan pemeliharaan sistem."
+    },
+    {
+      "judul": "AdGuard Home",
+      "ikon": "🛡",
+      "url": "https://adguard.clusternet.my.id",
+      "deskripsi": "Pemblokir iklan & pelacak tingkat DNS untuk seluruh jaringan rumah."
+    },
+    {
+      "judul": "Galeri Foto",
+      "ikon": "📸",
+      "url": "https://immich.clusternet.my.id",
+      "deskripsi": "Cadangan foto & video ala Google Photos — tetapi datanya milik Anda sendiri."
+    },
+    {
+      "judul": "Pemantauan",
+      "ikon": "📈",
+      "url": "https://grafana.clusternet.my.id",
+      "deskripsi": "Dasbor Grafana: kesehatan server, jaringan, dan layanan dalam satu pandangan."
+    },
+    {
+      "judul": "Status Layanan",
+      "ikon": "🔴",
+      "url": "https://kuma.clusternet.my.id/status/mesh",
+      "deskripsi": "Uptime Kuma: riwayat hidup-mati tiap layanan & server, diperbarui secara real-time."
+    },
+    {
+      "judul": "Kualitas Udara",
+      "ikon": "🌤",
+      "url": "https://udara.clusternet.my.id",
+      "deskripsi": "Monitor kualitas udara Cluster Taman Marina: suhu, kelembapan, eCO2, TVOC, dan AQI."
+    },
+    {
+      "judul": "Mesh ID",
+      "ikon": "📡",
+      "url": "https://meshid.clusternet.my.id",
+      "deskripsi": "Data node Meshtastic: gateway, node RF yang tersambung langsung, dan node lewat MQTT."
+    },
+    {
+      "judul": "Portal Aplikasi",
+      "ikon": "🔒",
+      "url": "https://billing.clusternet.my.id",
+      "deskripsi": "Aplikasi bisnis CLUSTERNET. Akses untuk staf dengan akun terdaftar."
+    }
+  ]
+}

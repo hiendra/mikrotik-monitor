@@ -1,0 +1,27 @@
+[Unit]
+Description=Prometheus exporter untuk node Meshtastic (TCP API)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Sesuaikan user dan path sesuai instalasi Anda.
+User=meshtastic
+WorkingDirectory=/opt/meshtastic-monitor
+Environment=MESH_HOST=192.168.20.31
+# Gateway cadangan (opsional): dipakai otomatis bila gateway utama tak bisa
+# dihubungi; exporter kembali ke utama sendiri begitu ia pulih. Boleh lebih
+# dari satu, dipisah koma.
+# Environment=MESH_HOST_CADANGAN=192.168.20.32
+Environment=MESH_PORT=4403
+Environment=MESH_EXPORTER_PORT=9208
+Environment=MESH_INTERVAL=30
+Environment=MESH_OFFLINE_SECS=10800
+# Ambang peringatan isi database node gateway (lihat catat-node.py / README).
+Environment=MESH_DB_AMBANG=190
+ExecStart=/opt/meshtastic-monitor/venv/bin/python /opt/meshtastic-monitor/exporter-meshtastic.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

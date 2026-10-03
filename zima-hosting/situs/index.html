@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClusterNet — Dasbor Layanan</title>
+<meta name="description" content="ClusterNet Cloud: satu dasbor untuk semua layanan ZimaOS (panel server, foto, pemantauan, AdGuard, billing) — dijangkau dari mana saja lewat Cloudflare, tanpa port forwarding.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1220'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%2322d3ee'/%3E%3C/svg%3E">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b1220; --bg2: #060b12; --panel: #101a2e; --panel2: #172440;
+    --line: #24344f; --text: #e6edf7; --muted: #8ea3c0;
+    --cyan: #22d3ee; --cyan-dim: #7fe3ff; --green: #34d399;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: radial-gradient(1200px 600px at 50% -10%, #11324d 0%, var(--bg) 55%, var(--bg2) 100%);
+    color: var(--text); font: 16px/1.6 system-ui, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+  a { color: var(--cyan-dim); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { width: min(1060px, 92%); margin: 0 auto; }
+
+  header { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  .merek { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .2px; }
+  .merek .keterangan { margin-left: auto; font-weight: 400; font-size: 13px; color: var(--muted); }
+  .titik { width: 12px; height: 12px; border-radius: 50%;
+           background: radial-gradient(circle at 30% 30%, #67e8f9, #0891b2);
+           box-shadow: 0 0 12px rgba(34,211,238,.8); }
+
+  main { flex: 1; }
+  .hero { text-align: center; padding: 64px 0 40px; }
+  .badge { display: inline-block; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+           color: var(--cyan-dim); border: 1px solid var(--line); border-radius: 999px;
+           padding: 6px 14px; margin-bottom: 22px; background: rgba(34,211,238,.06); }
+  h1 { font-size: clamp(30px, 6vw, 52px); line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.02em; }
+  h1 em { font-style: normal; color: var(--cyan); }
+  .hero p { color: var(--muted); font-size: clamp(15px, 2.4vw, 18px); max-width: 660px; margin: 0 auto 30px; }
+  .tombol { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .btn { padding: 11px 22px; border-radius: 10px; font-weight: 600; font-size: 15px;
+         border: 1px solid var(--line); color: var(--text); background: var(--panel2);
+         transition: border-color .15s, transform .15s; }
+  .btn:hover { border-color: var(--cyan); text-decoration: none; transform: translateY(-1px); }
+  .btn.utama { background: var(--cyan); border-color: var(--cyan); color: #04222a; }
+
+  h2 { font-size: clamp(20px, 3.6vw, 26px); margin: 0 0 6px; letter-spacing: -0.01em; }
+  .sub2 { color: var(--muted); margin: 0 0 26px; max-width: 720px; }
+  .layanan { padding: 34px 0 56px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .kartu { display: block; background: linear-gradient(180deg, var(--panel), rgba(16,26,46,.6));
+           border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px;
+           color: var(--text); transition: border-color .15s, transform .15s, box-shadow .15s; }
+  .kartu:hover { border-color: var(--cyan); transform: translateY(-2px);
+                 box-shadow: 0 8px 24px rgba(0,0,0,.35); text-decoration: none; }
+  .kartu h3 { margin: 0 0 4px; font-size: 16.5px; display: flex; align-items: center; gap: 8px; }
+  .kartu .url { color: var(--cyan-dim); font-size: 12.5px; word-break: break-all; }
+  .kartu p { color: var(--muted); font-size: 14px; margin: 10px 0 0; }
+  .status { display: inline-flex; align-items: center; gap: 6px; margin-left: auto;
+            font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--green); }
+  .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+                    box-shadow: 0 0 8px rgba(52,211,153,.9); }
+  .ikon { font-size: 19px; }
+  .luar { color: var(--muted); font-size: 13px; font-weight: 400; }
+  .catatan-muat { color: var(--muted); font-size: 14px; margin: 0; }
+
+  footer { border-top: 1px solid var(--line); padding: 20px 0 26px; color: var(--muted); font-size: 13.5px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 22px; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap merek">
+      <span class="titik" aria-hidden="true"></span>
+      <span>Cluster<span style="color:var(--cyan)">Net</span></span>
+      <span class="keterangan">Dasbor layanan &middot; clusternet.my.id</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <span class="badge">ClusterNet Cloud</span>
+      <h1>Satu dasbor untuk <em>seluruh layanan</em> server Anda.</h1>
+      <p>Semua layanan berjalan di ZimaOS dan dibuka lewat nama yang mudah diingat &mdash; tanpa port, tanpa port&nbsp;forwarding, terenkripsi penuh oleh Cloudflare. Tiap kartu terbuka di <strong>tab baru</strong>, jadi tab dasbor ini selalu tersisa sebagai pintu pulang.</p>
+      <div class="tombol">
+        <a class="btn utama" href="https://zima.clusternet.my.id" target="_blank" rel="noopener noreferrer">Buka Panel Server</a>
+        <a class="btn" href="#layanan">Lihat semua layanan</a>
+      </div>
+    </section>
+
+    <section id="layanan" class="layanan wrap">
+      <h2>Dasbor Layanan</h2>
+      <p class="sub2">Satu domain, banyak layanan &mdash; tiap layanan punya nama sendiri dan terbuka di tab baru. Untuk kembali ke sini, cukup pilih tab <strong>ClusterNet</strong> ini, atau ketik <strong>clusternet.my.id</strong> di peramban.</p>
+      <!-- Kartu digambar oleh dasbor.js dari ./layanan.json - jangan tulis
+           kartu di sini. Berkas itu yang dihasilkan panel-kelola.html, jadi
+           menambah subdomain tidak perlu menyunting halaman ini lagi. -->
+      <div class="grid" id="daftar-layanan">
+        <p class="catatan-muat">Memuat daftar layanan&hellip;</p>
+      </div>
+      <noscript>
+        <p class="catatan-muat">Aktifkan JavaScript untuk melihat daftar layanan, atau buka langsung nama-nama seperti <code>zima.clusternet.my.id</code>.</p>
+      </noscript>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>&copy; 2026 ClusterNet &middot; clusternet.my.id</span>
+      <a href="#layanan">Kembali ke daftar layanan</a>
+      <span>Dilayani dari ZimaOS lewat Cloudflare Tunnel</span>
+    </div>
+  </footer>
+  <script src="dasbor.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+# ============================================================
+# Web hosting ZimaOS - Cloudflare Tunnel + Caddy
+# ============================================================
+# Dipasang di ZimaOS lewat: App Store -> Install a customized app
+# (tempelkan isi berkas ini), atau `docker compose up -d` bila ada akses shell.
+#
+# PENTING: TIDAK ADA port yang dibuka ke internet di sini.
+# cloudflared hanya membuat koneksi KELUAR ke Cloudflare, jadi router
+# tidak perlu port forwarding sama sekali.
+#
+# Port 8089 di-host hanya untuk akses dari LAN (opsional). Kalau tidak
+# ingin ada port apa pun di host, hapus baris `ports:` di bawah.
+# ============================================================
+
+services:
+  # ----------------------------------------------------------
+  # Router internal: memilih layanan berdasarkan nama host
+  # ----------------------------------------------------------
+  caddy:
+    image: caddy:2-alpine
+    container_name: web-router
+    restart: unless-stopped
+    ports:
+      # akses dari LAN (port 80/443 host sudah dipakai ZimaOS Gateway)
+      - "8089:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./situs:/srv/situs:ro          # taruh berkas situs web di folder ./situs
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - web
+
+  # ----------------------------------------------------------
+  # Terowongan ke Cloudflare (outbound saja, tanpa port masuk)
+  # ----------------------------------------------------------
+  cloudflared:
+    # Versi dipatok agar pembaruan tidak terjadi tanpa sepengetahuan Anda.
+    # Memperbarui = ubah nomor versi di baris ini, lalu `docker compose pull && docker compose up -d`.
+    image: cloudflare/cloudflared:2026.9.1
+    container_name: cf-tunnel
+    restart: unless-stopped
+    # token dari Zero Trust -> Networks -> Tunnels -> (tunnel Anda) -> Docker
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      - caddy
+    networks:
+      - web
+
+networks:
+  web:
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+# Ringkasan langkah:
+#   1. Simpan token tunnel di berkas .env  ->  TUNNEL_TOKEN=eyJhIjoi...
+#   2. ZimaOS: App Store -> Install a customized app (tempel isi berkas ini),
+#      atau `docker compose up -d` dari folder ini via SSH.
+#   3. Cloudflare -> tunnel -> Public Hostname:
+#        (kosong) . clusternet.my.id  -> http://caddy:80
+#        www      . clusternet.my.id  -> http://caddy:80
+#        *        . clusternet.my.id  -> http://caddy:80   (wildcard 1 tingkat)
+#   4. Layanan baru cukup ditambah di Caddyfile, lalu `docker compose restart caddy`.
+#
+# Langkah rinci, Cloudflare Access, akses LAN, dan rollback:
+#   lihat PANDUAN-WEBHOSTING.md di folder ini.

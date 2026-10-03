@@ -1,0 +1,35 @@
+# ============================================================
+# prometheus-contoh.yml - potongan konfigurasi scrape Prometheus
+# ============================================================
+# Tambahkan blok scrape_configs di bawah ke prometheus.yml yang sudah ada.
+# Ganti host:port agar menunjuk ke MESIN yang menjalankan
+# exporter-meshtastic.py (bukan ke node Meshtastic).
+#
+# Keadaan di ZimaOS (28 Sep 2026): job ini sudah aktif di
+# /DATA/AppData/mikrotik-monitor/prometheus.yml, menumpang Prometheus yang
+# sama dengan pemantauan MikroTik. Rinciannya di bagian "Kasus ketiga" pada
+# zima-hosting/MIKROTIK-GRAFANA.md dan §5.13 di CATATAN-MESHNODEID.md.
+# ============================================================
+
+scrape_configs:
+  - job_name: meshtastic
+    scrape_interval: 30s
+    static_configs:
+      # Bila Prometheus berjalan sebagai container di HOST YANG SAMA dengan
+      # exporter, pakai host.docker.internal (host gateway). Tambahkan
+      #   extra_hosts:
+      #     - "host.docker.internal:host-gateway"
+      # ke layanan Prometheus di docker-compose.yml supaya nama itu selalu
+      # menunjuk IP host, tidak terikat pada nama jaringan docker.
+      #
+      # Bila Prometheus ada di mesin lain, ganti dengan IP:port mesin exporter,
+      # mis. "192.168.20.50:9208" (port MESH_EXPORTER_PORT).
+      - targets: ["host.docker.internal:9208"]
+
+# Berkas aturan alert. Dua hal harus dipasang BERSAMAAN: baris rule_files ini
+# DAN volume yang me-mount alert-meshtastic.yml ke dalam container. Bila hanya
+# rule_files yang disunting, Docker mendirikan direktori kosong di jalur itu
+# (create_host_path) dan Prometheus gagal start. Pakai create_host_path: false
+# pada volume-nya supaya salah pasang langsung berisik.
+rule_files:
+  - /etc/prometheus/alert-meshtastic.yml

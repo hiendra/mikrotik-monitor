@@ -1,0 +1,14 @@
+[Unit]
+Description=Jadwal bersih-bersih NodeDB Meshtastic (harian, dini hari)
+
+[Timer]
+# Setiap hari pukul 03:30, setelah jadwal reset (bila dipasang) selesai.
+OnCalendar=*-*-* 03:30:00
+# Sebar agar tidak selalu menabrak pekerjaan lain di jam yang sama.
+RandomizedDelaySec=600
+# Bila mesin sempat mati saat jadwal, jalankan sekali setelah hidup lagi.
+Persistent=true
+Unit=meshtastic-bersih.service
+
+[Install]
+WantedBy=timers.target

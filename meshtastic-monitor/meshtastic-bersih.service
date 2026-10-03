@@ -1,0 +1,29 @@
+[Unit]
+Description=Bersihkan NodeDB Meshtastic: hapus node yang lama tidak terdengar (sekali jalan)
+Documentation=file:/opt/meshtastic-monitor/README.md
+After=network-online.target
+Wants=network-online.target
+# Catatan: memakai koneksi TCP terpisah, jadi aman berjalan berdampingan dengan
+# exporter. Bedanya dengan meshtastic-reset.service: layanan ini TIDAK
+# mengosongkan daftar node - ia hanya membuang node jalur MQTT yang sudah lewat
+# ambang umur, dan meninggalkan node Favorite serta node jalur radio.
+
+[Service]
+Type=oneshot
+# Sesuaikan user dan path sesuai instalasi Anda.
+User=meshtastic
+WorkingDirectory=/opt/meshtastic-monitor
+Environment=MESH_HOST=192.168.20.31
+Environment=MESH_PORT=4403
+# Ambang umur bisa diubah tanpa menyunting unit ini: MESH_HAPUS_HARI.
+Environment=MESH_HAPUS_HARI=5
+Environment=NTFY_SERVER=https://ntfy.adminforge.de
+Environment=NTFY_TOPIK=mesh-6h4v8p2rxq
+Environment=NTFY_LOKAL=http://192.168.200.253:7200
+# --ya              benar-benar hapus (bawaan hanya periksa)
+# --hari 5          lewat ambang MESH_HAPUS_HARI bila disetel lain
+# --jeda-min-jam 20 pengaman agar tidak dobel setelah reboot/persistent
+# --jeda 1.0        beri napas firmware di antara perintah admin
+ExecStart=/opt/meshtastic-monitor/venv/bin/python /opt/meshtastic-monitor/bersih-node.py --ya --jeda-min-jam 20 --jeda 1.0
+# Menghapus ratusan entri satu per satu butuh waktu; jangan dibunuh di tengah.
+TimeoutStartSec=1800

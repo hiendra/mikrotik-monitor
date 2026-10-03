@@ -1,0 +1,143 @@
+# ============================================================
+# alert-meshtastic.yml - aturan alert Prometheus untuk node Meshtastic
+# ============================================================
+# Rujuk berkas ini dari prometheus.yml:
+#   rule_files:
+#     - /etc/prometheus/alert-meshtastic.yml
+#
+# Terpasang di ZimaOS (28 Sep 2026): salinan berkas ini ada di
+# /DATA/AppData/mikrotik-monitor/alert-meshtastic.yml dan di-mount read-only ke
+# dalam container Prometheus. `rule_files:` dan volume mount-nya HARUS dipasang
+# bersamaan - bila tidak, Docker mendirikan direktori kosong di jalur itu dan
+# Prometheus gagal start (pakai create_host_path: false). Periksa dengan
+# `promtool check rules`. Rinciannya: zima-hosting/MIKROTIK-GRAFANA.md,
+# "Kasus ketiga", dan CATATAN-MESHNODEID.md §5.13.
+# ============================================================
+
+# PENTING: semua aturan di sini DIBATASI ke node yang terdengar LANGSUNG lewat
+# radio LoRa (meshtastic_node_direct == 1). Database satu node bisa memuat
+# ratusan node dari broker MQTT publik, dan tanpa pembatasan ini Anda akan
+# dikirimi alert untuk node orang lain di seluruh Indonesia.
+#
+# Bila memang ingin memantau node jalur MQTT juga, hapus klausa
+# "and on(node_id) meshtastic_node_direct == 1" pada aturan yang dituju.
+
+groups:
+  - name: meshtastic
+    rules:
+      # Node radio (router tower / node LoRa satu jaringan) tidak terdengar lagi.
+      - alert: MeshtasticNodeOffline
+        expr: meshtastic_node_online == 0 and on(node_id) meshtastic_node_direct == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node Meshtastic {{ $labels.node_id }} OFFLINE"
+          description: "Node {{ $labels.node_id }} tidak terdengar oleh gateway meshtastic dalam ambang MESH_OFFLINE_SECS."
+
+      # Gateway baru saja reboot (reboot berulang = masalah daya/panas/watchdog).
+      - alert: MeshtasticGatewayReboot
+        expr: changes(meshtastic_gateway_reboot_count[1h]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Gateway Meshtastic baru reboot"
+          description: "Penghitung reboot naik dalam sejam terakhir. Cek catu daya/panas gateway."
+
+      # Database node gateway hampir penuh. Saat penuh, Meshtastic membuang node
+      # terlama - node RF yang jarang memancar bisa tergeser keluar.
+      - alert: MeshtasticNodeDbNearlyFull
+        expr: meshtastic_gateway_nodedb_count >= 190
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database node gateway hampir penuh ({{ $value }} entri)"
+          description: "Tandai node RF sebagai Favorite dan kurangi downlink MQTT pada gateway."
+
+      # Exporter sendiri mati / kehilangan koneksi ke node gateway.
+      #
+      # Dua-duanya perlu: `up` dapat dari Prometheus sendiri, sedangkan
+      # `meshtastic_exporter_up` dapat dari dalam exporter (turun bila sambungan
+      # ke gateway putus walaupun prosesnya masih melayani /metrics). Jangan
+      # hanya bersandar pada `meshtastic_exporter_up`: metrik itu BARU ADA
+      # setelah exporter berhasil mengumpulkan sekali, sehingga tepat sesudah
+      # restart ia sempat tidak dikeluarkan sama sekali (28 Sep 2026).
+      - alert: MeshtasticExporterDown
+        expr: meshtastic_exporter_up == 0 or up{job="meshtastic"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Exporter Meshtastic bermasalah"
+          description: "Tidak bisa terhubung ke node gateway Meshtastic (TCP API)."
+
+      # Exporter HIDUP dan bisa di-scrape, tetapi datanya tidak lagi diperbarui
+      # ("hidup tetapi buta"): halaman tetap 200, metrik per-node tetap terbit
+      # dengan nilai LAMA, dan tanpa aturan ini tidak ada satu pun alert yang
+      # berbunyi - persis kejadian yang pernah terjadi. Durasinya sengaja jauh
+      # di atas ambang basi exporter sendiri (3 x interval = 90 detik) supaya
+      # satu putaran yang lambat tidak menjadi alarm palsu.
+      - alert: MeshtasticDataStale
+        expr: meshtastic_cuplikan_umur_seconds > 300
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Data Meshtastic tidak diperbarui ({{ $value | printf \"%.0f\" }} detik)"
+          description: "Loop pengumpul exporter tersangkut: gateway tidak lagi dibaca. Angka per-node masih terbit tetapi sudah lama. Periksa sambungan TCP ke gateway 192.168.20.31:4403, lalu restart meshtastic-exporter bila perlu."
+
+      # Exporter sedang memakai GATEWAY CADANGAN: gateway utama tidak bisa
+      # dihubungi. Datanya tetap mengalir (itu tujuan cadangan), tetapi viewer
+      # perlu tahu sumbernya sudah berpindah - dan bahwa gateway utama masih
+      # perlu diperiksa. Hanya berbunyi bila MESH_HOST_CADANGAN diisi.
+      - alert: MeshtasticGatewayCadangan
+        expr: meshtastic_exporter_gateway_cadangan == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Exporter Meshtastic memakai gateway cadangan"
+          description: "Gateway utama (MESH_HOST) tidak bisa dihubungi; data diambil dari gateway cadangan. Periksa gateway utama; exporter akan kembali sendiri begitu ia hidup lagi."
+
+      # Baterai node radio lemah (nilai > 100 berarti bertenaga listrik).
+      - alert: MeshtasticBatteryLow
+        expr: meshtastic_device_battery_level_percent < 20 and on(node_id) meshtastic_node_direct == 1
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Baterai node {{ $labels.node_id }} lemah"
+          description: "Level baterai node {{ $labels.node_id }} di bawah 20%."
+
+      # Kualitas link: SNR rendah (gateway makin sulit mendengar node ini).
+      # Catatan: aturan Prometheus tidak punya histeresis seperti
+      # notif-meshtastic.py; durasi "for" di bawah yang menahan gejolak.
+      - alert: MeshtasticSnrLow
+        expr: meshtastic_node_snr_db < -7
+        for: 20m
+        labels:
+          severity: warning
+        annotations:
+          summary: "SNR node {{ $labels.node_id }} lemah"
+          description: "SNR di bawah -7 dB. Cek antena/ketinggian atau halangan antara node dan gateway."
+
+      # Rute node bertambah jauh (node perantara kemungkinan putus).
+      - alert: MeshtasticHopsHigh
+        expr: meshtastic_node_hops_away >= 3 and on(node_id) meshtastic_node_direct == 1
+        for: 20m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Rute node {{ $labels.node_id }} jadi {{ $value }} hop"
+          description: "Node kini butuh 3 hop atau lebih dari gateway; periksa node perantara."
+
+      # Kanal padat / airtime TX tinggi.
+      - alert: MeshtasticChannelSibuk
+        expr: meshtastic_device_channel_utilization_percent > 60
+        for: 15m
+        labels:
+          severity: info
+        annotations:
+          summary: "Kanal Meshtastic padat di {{ $labels.node_id }}"
+          description: "Utilisasi kanal node {{ $labels.node_id }} di atas 60%."

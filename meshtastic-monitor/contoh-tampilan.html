@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta http-equiv="refresh" content="5">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meshnode-ID Monitor</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{background:#0f1319;color:#e6edf3;font:13.5px/1.5 system-ui,Segoe UI,Roboto,sans-serif;margin:0;padding:18px 20px 44px;max-width:1750px}
+h1{font-size:19px;margin:0 0 3px}
+h2{font-size:14px;margin:26px 0 10px;border-bottom:1px solid #24303c;padding-bottom:7px;text-transform:uppercase;letter-spacing:.06em;color:#9fb0c3}
+a{color:#58a6ff}
+.dim{color:#8b98a8;font-size:12px}
+.mono{font-family:ui-monospace,Consolas,monospace}
+/* Kepala halaman: judul di kiri, keadaan sambungan di kanan. Titik warnanya
+   memakai currentColor, jadi warnanya ikut kelas .hidup/.mati di bawah. */
+.kepala{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;border-bottom:1px solid #24303c;padding-bottom:12px}
+/* Logo di samping judul; ukurannya dipatok di HTML (width/height) supaya tata
+   letak tidak melompat saat gambar selesai dimuat. */
+.merek{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;flex:0 0 auto;display:block}
+.status{display:flex;align-items:center;gap:8px;background:#1a212b;border:1px solid #2a3340;border-radius:999px;padding:6px 14px;font-size:12.5px;white-space:nowrap}
+.titik{width:9px;height:9px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.kartu{display:grid;grid-template-columns:repeat(auto-fit,minmax(134px,1fr));gap:10px;margin:14px 0 4px}
+.kotak{background:#1a212b;border:1px solid #2a3340;border-radius:10px;padding:10px 14px}
+.kotak b{display:block;font-size:22px;line-height:1.25;font-variant-numeric:tabular-nums}
+.kotak span{color:#8b98a8;font-size:11.5px}
+/* Tiap tabel duduk di kotak yang bisa digulir SENDIRI. Sebelumnya tabel yang
+   lebih lebar dari jendela menyeret seluruh halaman ke kanan, sehingga judul
+   dan kotak ringkasan ikut hilang saat orang membaca kolom paling kanan. */
+.gulir{overflow:auto;max-height:78vh;background:#1a212b;border:1px solid #232c38;border-radius:10px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+td.mono{font-size:12px}
+th,td{padding:6px 9px;text-align:left;border-bottom:1px solid #232c38;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+/* Nama kolom lengket: saat tabel MQTT yang panjang digulir, judulnya tetap
+   terbaca tanpa perlu naik ke atas dulu. */
+thead th{position:sticky;top:0;z-index:2;background:#202836;color:#9fb0c3;font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #2f3b4a}
+tbody tr:nth-child(even){background:#1d252e}
+tbody tr:hover{background:#26303c}
+th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}
+td.nama{white-space:normal;min-width:150px;max-width:250px;overflow-wrap:anywhere}
+.on{color:#3fb950;font-weight:600}.off{color:#f85149;font-weight:600}
+.hidup{color:#3fb950}.mati{color:#f85149}
+.peringatan{background:#3d1d1d;border:1px solid #f85149;color:#ffb3ad;padding:10px 14px;border-radius:8px;margin:12px 0}
+.favorit{color:#e3b341}
+.tag{background:#21323f;color:#79c0ff;border-radius:4px;padding:1px 6px;font-size:11px;white-space:nowrap}
+/* Lencana jalur paket: biru = node gateway sendiri, hijau = lewat radio,
+   abu-abu = lewat internet (MQTT). */
+.via{display:inline-block;border-radius:4px;padding:1px 7px;font-size:10.5px;font-weight:600;letter-spacing:.04em}
+.via-diri{background:#1d3557;color:#79c0ff}
+.via-lora{background:#173a24;color:#56d364}
+.via-mqtt{background:#2b3038;color:#9fb0c3}
+.lok{border-left:3px solid #3fb950;padding-left:0}
+.ragu{border-left:3px solid #e3b341;padding-left:0}
+.internet{border-left:3px solid #6e7681;padding-left:0}
+/* Kotak satu bagian (details) supaya penjelasan, tabel, dan judulnya terlihat
+   sebagai satu kesatuan, bukan tiga blok yang terapung. */
+.kotak-bagian{background:#161d25;border:1px solid #232c38;border-radius:10px;margin:14px 0;overflow:hidden}
+.kotak-bagian .isi{padding:0 14px 14px}
+/* Warna ambang operasional (lihat TANGGA_* di kode): hijau aman, kuning
+   mulai terasa, oranye tinggi, merah bahaya. Dipakai di kolom Kanal, Air TX,
+   dan Hop supaya masalah terlihat sebelum angka besar menyadarkannya. */
+.a-aman{color:#3fb950}.a-sedang{color:#e3b341}.a-tinggi{color:#f0883e}
+.a-padat{color:#f85149;font-weight:600}
+.hop-0{color:#3fb950}.hop-1{color:#58a6ff}.hop-2{color:#e3b341}.hop-3{color:#f85149}
+/* Meter sinyal: tiga batang yang naik, meniru indikator di aplikasi resmi
+   Meshtastic. Batang yang menyala memakai currentColor, jadi cukup satu kelas
+   warna (.m-*) untuk mewarnai batang sekaligus kata mutunya. Batang yang mati
+   tetap terlihat samar (opacity) supaya orang bisa melihat "2 dari 3". */
+.meter{display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
+.batang{display:inline-flex;align-items:flex-end;gap:3px;height:14px}
+.batang i{display:block;width:4px;border-radius:1px;background:currentColor;opacity:.22}
+.batang i:nth-child(1){height:6px}
+.batang i:nth-child(2){height:10px}
+.batang i:nth-child(3){height:14px}
+.batang i.nyala{opacity:1}
+.meter .mutu{font-weight:600}
+/* Angka SNR dipisah titik tengah: tanpa itu "Baik" dan "6.2 dB" terbaca
+   sebagai satu kata yang rapat. Titiknya dipasang lewat CSS supaya pemisah
+   tidak ikut tersalin saat teks selnya di-copy. */
+.meter .db{color:#8b98a8;font-variant-numeric:tabular-nums}
+.meter .db::before{content:"\00b7";color:#5a6675;margin-right:9px}
+/* Kolom sinyal rata kiri (bukan .num): isinya meter, bukan angka - dan jarak
+   kanannya dilebihkan supaya tidak menempel ke kolom Hop di sebelahnya. */
+td.sinyal{white-space:nowrap;padding-right:20px}
+th.sinyal{white-space:nowrap}
+.m-baik{color:#3fb950}.m-cukup{color:#e3b341}.m-buruk{color:#f0883e}.m-nihil{color:#f85149}
+.m-internet{color:#8b98a8}
+/* Lencana "charge": penanda perangkat bertenaga listrik/USB (kode 101 dari
+   firmware), dipakai sebagai ganti angka 101 persen yang menyesatkan.
+   Catatan: di dalam template ini tanda persen HARUS ditulis ganda (%), karena
+   seluruh halaman dirakit lewat pemformatan persen. */
+.charge{background:#21323f;color:#79c0ff;border-radius:4px;padding:1px 6px;font-size:11px;white-space:nowrap}
+/* Penjelasan ambang: label di kiri, artinya di kanan, satu baris per aturan -
+   supaya tidak lagi menjadi satu paragraf panjang yang sulit dipindai. */
+.tangga{background:#1a212b;border:1px solid #2a3340;border-radius:10px;padding:12px 16px;margin:14px 0;font-size:12.5px}
+.tangga b{color:#9fb0c3;font-weight:600}
+.tangga-judul{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#9fb0c3;margin-bottom:5px}
+.tangga-baris{display:grid;grid-template-columns:150px 1fr;gap:2px 14px;padding:5px 0;border-top:1px solid #232c38}
+.tangga-baris:first-of-type{border-top:none}
+.tangga .dim{margin-bottom:4px}
+@media (max-width:760px){.tangga-baris{grid-template-columns:1fr}}
+/* Panah penanda bagian yang bisa dibuka/tutup. Penanda bawaan browser disembunyikan
+   supaya bentuk dan posisinya seragam di semua peramban, lalu diganti panah sendiri
+   yang berubah arah: menunjuk kanan saat tertutup, ke bawah saat terbuka.
+   Catatan: escape CSS memakai kode hex LANGSUNG (\25b6), bukan gaya \u25b6 -
+   CSS tidak mengenal awalan "u", jadi salah bentuk akan tampil sebagai teks. */
+summary{cursor:pointer;font-size:16px;font-weight:600;margin:28px 0 8px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::marker{content:""}
+summary::before{content:"\25b6";color:#58a6ff;font-size:12px;margin-right:8px;display:inline-block}
+details[open]>summary::before{content:"\25bc"}
+summary:hover{color:#79c0ff}
+details[open] summary{margin-bottom:8px}
+/* Alat saring: satu baris bersama hasilnya, bukan kolom input yang menggantung
+   sendirian di tengah halaman. Ada DUA kotak yang berbagi satu saringan - satu
+   di atas semua tabel, satu lagi tepat di atas tabel MQTT yang panjang -, jadi
+   keduanya memakai gaya yang sama; .alat-tabel hanya merapikan jaraknya di
+   dalam kotak bagian. */
+.alat{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:16px 0 6px}
+.alat-tabel{margin:10px 0 10px}
+input{background:#1a212b;border:1px solid #2a3340;color:#e6edf3;border-radius:8px;padding:8px 12px;width:280px;font:inherit}
+input:focus{outline:none;border-color:#3d5a80}
+.hasil{font-size:12px;color:#8b98a8}
+.kaki{margin-top:22px;padding-top:12px;border-top:1px solid #24303c}
+.kaki a{display:inline-block;background:#1a212b;border:1px solid #2a3340;border-radius:8px;padding:5px 11px;font-size:12px;text-decoration:none;margin-right:8px}
+.kaki a:hover{border-color:#3d5a80}
+
+/* ===== Tab menu & panel ===== */
+.tab{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;border-bottom:1px solid #24303c}
+.tab-tombol{background:none;border:none;border-bottom:2px solid transparent;color:#8b98a8;font:inherit;font-size:13.5px;padding:9px 15px;cursor:pointer;border-radius:8px 8px 0 0}
+.tab-tombol:hover{color:#79c0ff;background:#1a212b}
+.tab-tombol.aktif{color:#e6edf3;border-bottom-color:#58a6ff;background:#1a212b}
+.panel[hidden]{display:none}
+/* ===== Peta ===== */
+.peta-alat{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0}
+.peta-alat button,.tombol-tengah,.tombol-lacak{background:#1a212b;border:1px solid #2a3340;color:#e6edf3;border-radius:8px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer;text-decoration:none;display:inline-block}
+.peta-alat button:hover,.tombol-tengah:hover,.tombol-lacak:hover{border-color:#3d5a80}
+.tombol-lacak{background:#1d3557;color:#79c0ff;border-color:#2c4a6e;font-weight:600}
+#peta-kanvas{height:70vh;min-height:420px;border:1px solid #232c38;border-radius:10px;background:#0b0f14}
+.peta-kunci{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:12px;color:#8b98a8;margin:10px 0}
+.peta-kunci i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.w-hijau{background:#3fb950}.w-biru{background:#58a6ff}.w-abu{background:#8b98a8}.w-merah{background:#f85149}
+.peta-galat{background:#3d1d1d;border:1px solid #f85149;color:#ffb3ad;padding:10px 14px;border-radius:8px;margin:10px 0}
+/* ===== Popup node (latar putih bawaan Leaflet) ===== */
+.leaflet-popup-content{margin:12px 14px;font:13px/1.5 system-ui,Segoe UI,Roboto,sans-serif;min-width:220px}
+.popup-judul{font-weight:600;font-size:14px;color:#1f2328;margin-bottom:1px}
+.popup-id{color:#57606a;font-family:ui-monospace,Consolas,monospace;font-size:11.5px;margin-bottom:6px}
+.popup-tabel{border-collapse:collapse;margin:8px 0;font-size:12.5px}
+.popup-tabel td{padding:2px 12px 2px 0;border:none;white-space:nowrap;color:#1f2328}
+.popup-tabel td:first-child{color:#57606a}
+.popup-tabel .dim,.popup-lacak .dim{color:#57606a}
+.popup-lacak{border-top:1px solid #d0d7de;padding-top:9px;margin-top:9px}
+.popup-lacak .mono{font-size:11px;color:#57606a;margin-top:5px;word-break:break-all}
+/* ===== Panel rincian (halaman lacak) ===== */
+.rincian{background:#1a212b;border:1px solid #2a3340;border-radius:10px;padding:2px 16px;margin:12px 0}
+.rincian .baris{display:grid;grid-template-columns:200px 1fr;gap:2px 16px;padding:8px 0;border-top:1px solid #232c38}
+.rincian .baris:first-child{border-top:none}
+.rincian b{color:#9fb0c3;font-weight:600}
+@media (max-width:760px){.rincian .baris{grid-template-columns:1fr}}
+
+</style></head><body>
+<div class="kepala">
+  <div class="merek"><img class="logo" src="/logo.png" width="42" height="42" alt="Logo MeshNode ID">
+    <div>
+      <h1>Meshnode-ID Monitor</h1>
+      <div class="dim">Gateway <span class="mono">192.168.20.31:4403</span> &middot; preset <span class="mono">tidak terbaca</span> &middot; diperbarui <span class="mono" id="peta-diperbarui">2026-10-01 19:10:33</span></div>
+    </div>
+  </div>
+  <div class="status hidup"><span class="titik"></span> exporter terhubung</div>
+</div>
+
+<div class="tab" role="tablist">
+  <button type="button" class="tab-tombol aktif" data-tab="tabel" role="tab" aria-selected="true">Tabel node</button>
+  <button type="button" class="tab-tombol" data-tab="peta" role="tab" aria-selected="false">Peta langsung</button>
+</div>
+
+<div id="panel-tabel" class="panel">
+
+<div class="kartu">
+  <div class="kotak"><b>2</b><span>langsung ke gateway</span></div>
+  <div class="kotak"><b>1</b><span>radio, ada bukti SNR</span></div>
+  <div class="kotak"><b>3</b><span>radio, belum ada bukti</span></div>
+  <div class="kotak"><b>1</b><span>lewat MQTT (internet)</span></div>
+  <div class="kotak"><b>6</b><span>online</span></div>
+  <div class="kotak"><b>6</b><span>total node</span></div>
+  <div class="kotak"><b>1h 1j 0m</b><span>uptime gateway</span></div>
+  <div class="kotak"><b>83 / 190</b><span>database node</span></div>
+</div>
+
+<div class="tangga">
+<div class="tangga-judul">Ambang yang dipakai halaman ini</div>
+<div class="dim">Angka di kolom Kanal, Air TX, dan Hop diwarnai mengikuti pedoman operasional Meshtastic &mdash; pedoman yang sama dipakai dasbor komunitas, jadi hasilnya bisa dibandingkan antarperkakas.</div>
+<div class="tangga-baris"><b>Utilisasi kanal</b><span><span class="a-aman">&lt;25%</span> sehat &middot; <span class="a-sedang">25&ndash;40%</span> sedang, pengiriman mulai tertahan &middot; <span class="a-tinggi">40&ndash;50%</span> tinggi, pembaruan GPS dikurangi &middot; <span class="a-padat">&gt;50%</span> padat, kanal kelebihan beban</span></div>
+<div class="tangga-baris"><b>Airtime TX</b><span><span class="a-aman">&lt;5%</span> bagus &middot; <span class="a-sedang">5&ndash;8%</span> wajar &middot; <span class="a-padat">&gt;8%</span> kelebihan, kurangi pancaran</span></div>
+<div class="tangga-baris"><b>Hop</b><span><span class="hop-0">0</span> langsung ke gateway &middot; <span class="hop-1">1&ndash;2</span> dekat &middot; <span class="hop-2">3&ndash;4</span> jauh &middot; <span class="hop-3">&ge;5</span> sangat jauh</span></div>
+<div class="tangga-baris"><b>Baterai</b><span><span class="charge">charge</span> tersambung listrik/USB &middot; angka persen = memakai baterai &middot; <span class="dim">&ndash;</span> perangkat tidak melaporkan baterai</span></div>
+<div class="tangga-baris"><b>Meter sinyal</b><span><span class='meter m-baik' title="SNR di atas lantai demodulasi"><span class='batang'><i class='nyala'></i><i class='nyala'></i><i class='nyala'></i></span><span class='mutu'>Baik</span></span> <span class='dim'>SNR di atas lantai demodulasi</span> &middot; <span class='meter m-cukup' title="sampai 5.5 dB di bawah lantai"><span class='batang'><i class='nyala'></i><i class='nyala'></i><i></i></span><span class='mutu'>Cukup</span></span> <span class='dim'>sampai 5.5 dB di bawah lantai</span> &middot; <span class='meter m-buruk' title="sampai 7.5 dB di bawah lantai"><span class='batang'><i class='nyala'></i><i></i><i></i></span><span class='mutu'>Buruk</span></span> <span class='dim'>sampai 7.5 dB di bawah lantai</span> &middot; <span class='meter m-nihil' title="lebih dalam dari 7.5 dB di bawah lantai"><span class='batang'><i></i><i></i><i></i></span><span class='mutu'>Nihil</span></span> <span class='dim'>lebih dalam dari 7.5 dB di bawah lantai</span></span></div>
+<div class="tangga-baris"><b>Cara membacanya</b><span>Meter ini menilai <b>keterbacaan</b>, bukan kuat-lemah: yang diukur jarak SNR paket terakhir dari <b>lantai demodulasi</b> preset radio gateway (<span class="mono">tidak terbaca</span> &rarr; lantai <b>-17.5 dB</b> <span class='dim'>(diasumsikan, setelan radio gateway belum terbaca)</span>). Radio LoRa memang bisa mendengar di bawah lantai derau, jadi SNR negatif itu normal &mdash; dan SNR &minus;10 dB bisa "Baik" di satu preset tetapi "Nihil" di preset lain. Angka SNR mentahnya tetap dicetak di sebelah meter. Node jalur MQTT tidak diberi meter karena gateway tidak mendengarnya lewat udara.</span></div>
+<div class="tangga-baris"><b>Tanda lain</b><span><span class="via via-lora">LORA</span> lewat radio &middot; <span class="via via-mqtt">MQTT</span> lewat internet &middot; <span class="favorit">&#9733;</span> Favorite (terlindungi saat daftar node penuh)</span></div>
+</div>
+
+<div class="alat">
+  <input id="saring" data-saring placeholder="saring: nama atau ID, mis. ROUTER, MOB, !da5a16f8">
+  <span class="dim">saringan tetap tersimpan saat halaman menyegar</span>
+  <span class="hasil"></span>
+</div>
+
+<div class="kotak-bagian lok">
+<details open class="bagian" id="bagian-gateway"><summary>GATEWAY &amp; NODE YANG TERSAMBUNG LANGSUNG &mdash; 2 node</summary>
+<div class="isi">
+<div class="dim">Baris pertama adalah gateway itu sendiri. Sisanya node yang <b>terbukti</b> tersambung langsung ke gateway: gateway <b>mengukur sendiri</b> SNR-nya lewat udara dan jaraknya <b>0 hop</b>. Jadi buktinya bukan label dari internet, melainkan hasil pengukuran radio di tempat Anda. <span class="favorit">&#9733;</span> = Favorite (lebih terlindungi saat daftar node penuh).</div>
+<div class="gulir"><table class="data"><thead><tr><th>ID</th><th>Nama &amp; Perangkat</th><th>Via</th><th>Status</th><th class='num'>Terakhir</th><th class='num'>Baterai / Daya</th><th class='num'>Kanal</th><th class='num'>Air TX</th><th class='sinyal'>Sinyal (SNR)</th><th class='num'>Hop</th><th class='num'>Suhu / RH / hPa</th><th>Lat / Lon / Alt</th></tr></thead>
+<tbody><tr><td class='mono'>!00000001</td><td class='nama'><b>[B-75]MTL|CBT|HOME</b> <span class='tag'>gateway</span><br><span class='dim'>GAT &middot; CLIENT &middot; SEEED_XIAO_S3</span></td><td><span class='via via-diri'>DIRI</span></td><td><span class='on'>ONLINE</span></td><td class='num'>1s</td><td class='num'><span class='charge' title='Tersambung listrik/USB - firmware mengirim kode 101 untuk itu, bukan persentase'>charge</span><br><span class='dim'>up 1j 0m</span></td><td class='num'><span class='a-aman' title='sehat'>24.9%</span></td><td class='num'><span class='a-aman' title='bagus'>4.9%</span></td><td class='sinyal'>-</td><td class='num'>-</td><td class='num'>30.0 °C<br><span class='dim'>70.0 % RH</span><br><span class='dim'>1008 hPa</span></td><td class='mono'>-6.20000 / 106.80000<br><span class='dim'>20 m</span></td></tr><tr><td class='mono'>!00000002</td><td class='nama'><b><span class='favorit'>&#9733;</span> MOB-01</b> <span class='tag'>langsung ke gateway</span><br><span class='dim'>MOB &middot; CLIENT &middot; SEEED_XIAO_S3</span></td><td><span class='via via-lora'>LORA</span></td><td><span class='on'>ONLINE</span></td><td class='num'>2m 0s</td><td class='num'>80%<br><span class='dim'>4.10 V</span><br><span class='dim'>up 1j 0m</span></td><td class='num'><span class='a-sedang' title='sedang'>25.0%</span></td><td class='num'><span class='a-sedang' title='wajar'>5.0%</span></td><td class='sinyal'><span class='meter m-baik' title="Baik (SNR di atas lantai demodulasi). SNR 8.5 vs lantai preset -17.5 dB"><span class='batang'><i class='nyala'></i><i class='nyala'></i><i class='nyala'></i></span><span class='mutu'>Baik</span><span class='db'>8.5 dB</span></span></td><td class='num'><span class='hop-0' title='langsung'>0</span> <span class='dim'>langsung</span></td><td class='num'>30.0 °C<br><span class='dim'>70.0 % RH</span><br><span class='dim'>1008 hPa</span></td><td class='mono'>-6.20000 / 106.80000<br><span class='dim'>20 m</span></td></tr></tbody></table></div>
+</div>
+</details>
+</div>
+
+<div class="kotak-bagian ragu">
+<details class="bagian" id="bagian-ragu"><summary>NODE JALUR RADIO TANPA BUKTI KONEKSI LANGSUNG &mdash; 3 node</summary>
+<div class="isi">
+<div class="dim">Node ini <b>bukan</b> node MQTT, tetapi gateway <b>belum pernah mengukur SNR-nya</b> dan jaraknya belum diketahui. Artinya belum ada bukti ia tersambung langsung ke gateway &mdash; bisa jadi terakhir terdengar lewat perantara, atau entri lamanya masih tersimpan. Begitu gateway menangkap paketnya lewat udara, ia akan pindah sendiri ke tabel di atas.</div>
+<div class="gulir"><table class="data"><thead><tr><th>ID</th><th>Nama &amp; Perangkat</th><th>Via</th><th>Status</th><th class='num'>Terakhir</th><th class='num'>Baterai / Daya</th><th class='num'>Kanal</th><th class='num'>Air TX</th><th class='sinyal'>Sinyal (SNR)</th><th class='num'>Hop</th><th class='num'>Suhu / RH / hPa</th><th>Lat / Lon / Alt</th></tr></thead>
+<tbody><tr><td class='mono'>!00000003</td><td class='nama'><b><span class='favorit'>&#9733;</span> MOB-02</b> <span class='tag'>belum ada bukti langsung</span><br><span class='dim'>MOB &middot; CLIENT &middot; SEEED_XIAO_S3</span></td><td><span class='via via-lora'>LORA</span></td><td><span class='on'>ONLINE</span></td><td class='num'>10m 0s</td><td class='num'>80%<br><span class='dim'>4.10 V</span><br><span class='dim'>up 1j 0m</span></td><td class='num'><span class='a-tinggi' title='tinggi'>40.0%</span></td><td class='num'><span class='a-padat' title='kelebihan'>8.0%</span></td><td class='sinyal'><span class='meter m-baik' title="Baik (SNR di atas lantai demodulasi). SNR 3.0 vs lantai preset -17.5 dB"><span class='batang'><i class='nyala'></i><i class='nyala'></i><i class='nyala'></i></span><span class='mutu'>Baik</span><span class='db'>3.0 dB</span></span></td><td class='num'><span class='hop-1' title='dekat'>2</span> <span class='dim'>dekat</span></td><td class='num'>30.0 °C<br><span class='dim'>70.0 % RH</span><br><span class='dim'>1008 hPa</span></td><td class='mono'>-6.20000 / 106.80000<br><span class='dim'>20 m</span></td></tr><tr><td class='mono'>!00000004</td><td class='nama'><b><span class='favorit'>&#9733;</span> ROUTER</b> <span class='tag'>belum ada bukti langsung</span><br><span class='dim'>ROU &middot; CLIENT &middot; SEEED_XIAO_S3</span></td><td><span class='via via-lora'>LORA</span></td><td><span class='on'>ONLINE</span></td><td class='num'>15m 0s</td><td class='num'>80%<br><span class='dim'>4.10 V</span><br><span class='dim'>up 1j 0m</span></td><td class='num'><span class='a-padat' title='padat'>50.0%</span></td><td class='num'><span class='a-padat' title='kelebihan'>9.0%</span></td><td class='sinyal'><span class='meter m-baik' title="Baik (SNR di atas lantai demodulasi). SNR -2.0 vs lantai preset -17.5 dB"><span class='batang'><i class='nyala'></i><i class='nyala'></i><i class='nyala'></i></span><span class='mutu'>Baik</span><span class='db'>-2.0 dB</span></span></td><td class='num'><span class='hop-2' title='jauh'>4</span> <span class='dim'>jauh</span></td><td class='num'>30.0 °C<br><span class='dim'>70.0 % RH</span><br><span class='dim'>1008 hPa</span></td><td class='mono'>-6.20000 / 106.80000<br><span class='dim'>20 m</span></td></tr><tr><td class='mono'>!00000005</td><td class='nama'><b><span class='favorit'>&#9733;</span> JAUH</b> <span class='tag'>belum ada bukti langsung</span><br><span class='dim'>JAU &middot; CLIENT &middot; SEEED_XIAO_S3</span></td><td><span class='via via-lora'>LORA</span></td><td><span class='on'>ONLINE</span></td><td class='num'>20m 0s</td><td class='num'>80%<br><span class='dim'>4.10 V</span><br><span class='dim'>up 1j 0m</span></td><td class='num'><span class='a-padat' title='padat'>75.0%</span></td><td class='num'><span class='a-padat' title='kelebihan'>25.0%</span></td><td class='sinyal'>-</td><td class='num'><span class='hop-3' title='sangat jauh'>7</span> <span class='dim'>sangat jauh</span></td><td class='num'>30.0 °C<br><span class='dim'>70.0 % RH</span><br><span class='dim'>1008 hPa</span></td><td class='mono'>-6.20000 / 106.80000<br><span class='dim'>20 m</span></td></tr></tbody></table></div>
+</div>
+</details>
+</div>
+
+<div class="kotak-bagian internet">
+<details class="bagian" id="bagian-mqtt"><summary>NODE LEWAT MQTT (INTERNET) &mdash; 1 node, BUKAN jaringan radio lokal Anda</summary>
+<div class="isi">
+<div class="dim">Node dari broker publik <span class="mono">msh</span>. Mereka muncul karena gateway ikut menarik MQTT, dan bisa memenuhi daftar node. Tanda <span class="tag">pernah lewat radio</span> berarti gateway <b>juga</b> pernah mendengarnya lewat udara &mdash; kemungkinan itu node lokal yang paket terakhirnya kebetulan datang dari internet.</div>
+<div class="alat alat-tabel">
+  <input id="saring-mqtt" data-saring placeholder="saring 1 node MQTT: nama atau ID, mis. !da5a16f8">
+  <span class="dim">kotak ini menyaring tabel node &amp; katanya ikut tersimpan saat halaman menyegar</span>
+  <span class="hasil"></span>
+</div>
+<div class="gulir"><table class="data"><thead><tr><th>ID</th><th>Nama &amp; Perangkat</th><th>Via</th><th>Status</th><th class='num'>Terakhir</th><th class='num'>Baterai / Daya</th><th class='num'>Kanal</th><th class='num'>Air TX</th><th class='sinyal'>Sinyal (SNR)</th><th class='num'>Hop</th><th class='num'>Suhu / RH / hPa</th><th>Lat / Lon / Alt</th></tr></thead>
+<tbody><tr><td class='mono'>!00000006</td><td class='nama'><b>MQTT-NODE</b><br><span class='dim'>MQT &middot; CLIENT &middot; SEEED_XIAO_S3</span></td><td><span class='via via-mqtt'>MQTT</span></td><td><span class='on'>ONLINE</span></td><td class='num'>1j 23m</td><td class='num'>80%<br><span class='dim'>4.10 V</span><br><span class='dim'>up 1j 0m</span></td><td class='num'>-</td><td class='num'>-</td><td class='sinyal'><span class='meter m-internet' title='Tidak didengar radio gateway Anda - paket terakhir datang lewat internet (MQTT), jadi tidak ada ukuran keterbacaan dari tempat Anda'><span class='mutu'>&ndash;</span><span class='db'>lewat internet</span></span></td><td class='num'>-</td><td class='num'>30.0 °C<br><span class='dim'>70.0 % RH</span><br><span class='dim'>1008 hPa</span></td><td class='mono'>-6.20000 / 106.80000<br><span class='dim'>20 m</span></td></tr></tbody></table></div>
+</div>
+</details>
+</div>
+
+<h2>Data yang masuk ke node (paket terakhir)</h2>
+<div class="dim" style="margin-bottom:8px">0 paket terakhir yang tercatat di gateway.</div>
+<div class="gulir"><table><thead><tr>
+<th>Waktu</th><th>Dari</th><th>Tipe</th><th class="num">SNR</th><th class="num">RSSI</th><th class="num">Hop</th>
+</tr></thead><tbody><tr><td colspan='6' class='dim'>Belum ada paket.</td></tr></tbody></table></div>
+<div class="kaki dim">Halaman menyegar otomatis tiap 5 detik.&nbsp; <a href="/data.json">/data.json</a><a href="/metrics">/metrics</a></div>
+</div>
+<div id="panel-peta" class="panel" hidden>
+<div class="peta-alat">
+  <button type="button" id="peta-pas">Pas ke semua node</button>
+  <button type="button" id="peta-segar">Segarkan sekarang</button>
+  <span class="dim" id="peta-ringkas">memuat data node...</span>
+</div>
+<div id="peta-galat" class="peta-galat" hidden></div>
+<div id="peta-kanvas"></div>
+<div class="peta-kunci">
+  <span><i class="w-hijau"></i>online, lewat radio</span>
+  <span><i class="w-biru"></i>gateway</span>
+  <span><i class="w-abu"></i>online, lewat MQTT</span>
+  <span><i class="w-merah"></i>offline</span>
+  <span class="dim">Klik penanda untuk data node &amp; tautan lacaknya.</span>
+</div>
+<div class="dim">Peta menyegar sendiri tiap 5 detik <b>tanpa memuat ulang halaman</b>, jadi posisi dan zoom yang Anda pilih tidak hilang. Pustaka peta &amp; basemap diambil dari internet (unpkg &amp; OpenStreetMap); tanpa internet peta tidak tampil, tetapi tab tabel tetap berfungsi.</div>
+</div>
+
+<script>
+(function(){
+  var PETA=null, LAPISAN=null, TIMER=null, SUDAH_PAS=false, SIBUK=false;
+  var SOROT=(typeof window.PETA_SOROT==='string')?window.PETA_SOROT:'';
+  var POSISI={};
+
+  function el(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+      if(c==='&'){ return '&amp;'; }
+      if(c==='<'){ return '&lt;'; }
+      if(c==='>'){ return '&gt;'; }
+      if(c==='"'){ return '&quot;'; }
+      return '&#39;';
+    });
+  }
+  function angka(v,digit,satuan){
+    if(v===null||v===undefined||v===''){ return '-'; }
+    var x=parseFloat(v);
+    if(!isFinite(x)){ return '-'; }
+    return x.toFixed(digit)+(satuan||'');
+  }
+  function durasi(d){
+    if(d===null||d===undefined){ return '-'; }
+    d=Math.max(0,Math.round(d));
+    if(d<60){ return d+' detik'; }
+    var m=Math.floor(d/60), j=Math.floor(m/60), h=Math.floor(j/24);
+    if(j<1){ return m+' menit'; }
+    if(h<1){ return j+' jam '+(m%60)+' menit'; }
+    return h+' hari '+(j%24)+' jam';
+  }
+  function baterai(v){
+    if(v===null||v===undefined||v===''){ return '-'; }
+    var x=parseFloat(v);
+    if(!isFinite(x)){ return '-'; }
+    if(x>100){ return 'charge &mdash; tersambung listrik/USB'; }
+    return x.toFixed(0)+'%';
+  }
+  function tegangan(v){
+    if(v===null||v===undefined||v===''){ return ''; }
+    var x=parseFloat(v);
+    if(!isFinite(x)||Math.abs(x)<0.05){ return ''; }
+    return x.toFixed(2)+' V';
+  }
+  function mutuKata(m){
+    var label=['Nihil','Buruk','Cukup','Baik'];
+    if(m===null||m===undefined){ return ''; }
+    return label[m]||'';
+  }
+  function sinyal(n){
+    if((n.via||'').toLowerCase()==='mqtt'){ return '<span class="dim">lewat internet (bukan radio gateway)</span>'; }
+    if(n.snr===null||n.snr===undefined){ return '-'; }
+    var m=mutuKata(n.mutu_sinyal);
+    return esc(angka(n.snr,1,' dB'))+(m?(' <span class="dim">&middot; '+m+'</span>'):'');
+  }
+  function hop(n){
+    if(n.hops===null||n.hops===undefined){ return '-'; }
+    var h=parseFloat(n.hops), k='';
+    if(h===0){ k='langsung ke gateway'; }
+    else if(h<=2){ k='dekat'; }
+    else if(h<=4){ k='jauh'; }
+    else { k='sangat jauh'; }
+    return h.toFixed(0)+' <span class="dim">&middot; '+k+'</span>';
+  }
+  // /data.json mengirim waktu sebagai epoch detik (angka), sedangkan halaman
+  // yang dirender server memakai teks "YYYY-MM-DD HH:MM:SS". Formatnya dibuat
+  // sama di sini supaya kolom "diperbarui" tidak berubah bentuk setelah peta
+  // menyegar sendiri.
+  function stempel(epoch){
+    if(!epoch){ return '-'; }
+    try{
+      var d=new Date(parseFloat(epoch)*1000);
+      if(isNaN(d.getTime())){ return '-'; }
+      function p(n){ return (n<10?'0':'')+n; }
+      return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())
+        +' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+    }catch(e){ return '-'; }
+  }
+  function viaLencana(via){
+    var v=(via||'').toLowerCase();
+    if(v==='diri'){ return '<span class="via via-diri">DIRI</span>'; }
+    if(v==='lora'){ return '<span class="via via-lora">LORA</span>'; }
+    return '<span class="via via-mqtt">MQTT</span>';
+  }
+  function status(n){
+    return n.online ? '<span class="on">ONLINE</span>' : '<span class="off">OFFLINE</span>';
+  }
+  function warna(n){
+    if(!n.online){ return '#f85149'; }
+    if(n.via==='diri'){ return '#58a6ff'; }
+    if(n.via==='mqtt'){ return '#8b98a8'; }
+    return '#3fb950';
+  }
+  function baris(label,nilai){
+    return '<div class="baris"><b>'+label+'</b><span>'+nilai+'</span></div>';
+  }
+  function namaNode(n){
+    var nama=esc(n.long_name||'(tanpa nama)');
+    if(n.favorite){ nama='<span class="favorit">&#9733;</span> '+nama; }
+    return nama;
+  }
+  function rincian(n){
+    var daya=baterai(n.battery), t=tegangan(n.voltage);
+    if(t){ daya+=' <span class="dim">&middot; '+t+'</span>'; }
+    if(n.uptime){ daya+=' <span class="dim">&middot; up '+durasi(n.uptime)+'</span>'; }
+    var pos=angka(n.lat,5,'')+' / '+angka(n.lon,5,'');
+    if(n.alt!==null&&n.alt!==undefined){ pos+=' <span class="dim">&middot; '+angka(n.alt,0,' m')+'</span>'; }
+    var env=angka(n.temp,1,' &deg;C');
+    if(n.hum!==null&&n.hum!==undefined){ env+=' <span class="dim">&middot; '+angka(n.hum,1,' % RH')+'</span>'; }
+    if(n.press!==null&&n.press!==undefined){ env+=' <span class="dim">&middot; '+angka(n.press,0,' hPa')+'</span>'; }
+    return baris('Nama', namaNode(n))
+      +baris('Node ID', '<span class="mono">'+esc(n.node_id)+'</span>')
+      +baris('Status', status(n)+' <span class="dim">&middot; terakhir '+durasi(n.last_heard_seconds)+' lalu ('+stempel(n.last)+')</span>')
+      +baris('Jalur paket terakhir', viaLencana(n.via))
+      +baris('Sinyal (SNR)', sinyal(n))
+      +baris('Hop', hop(n))
+      +baris('Baterai / Daya', daya)
+      +baris('Kanal / Air TX', angka(n.chan_util,1,'%')+' <span class="dim">&middot; air TX '+angka(n.air_tx,1,'%')+'</span>')
+      +baris('Posisi (lat / lon / alt)', pos)
+      +baris('Suhu / RH / hPa', env)
+      +baris('Perangkat / Peran', esc(n.hw_model||'-')+' <span class="dim">&middot; '+(n.role?esc(n.role):'-')+'</span>')
+      +baris('Favorite', n.favorite?'ya &mdash; lebih terlindungi saat daftar node penuh':'tidak');
+  }
+  function tautanLacak(n){
+    var u='/lacak/'+encodeURIComponent(n.node_id);
+    return '<div class="popup-lacak"><a class="tombol-lacak" href="'+esc(u)+'">Lacak node ini &rarr;</a>'
+      +'<div class="mono">'+esc(u)+'</div></div>';
+  }
+  function popup(n){
+    return '<div class="popup-judul">'+namaNode(n)+'</div>'
+      +'<div class="popup-id">'+esc(n.node_id)+'</div>'
+      +'<div>'+status(n)+' '+viaLencana(n.via)+'</div>'
+      +'<table class="popup-tabel"><tbody>'
+      +'<tr><td>Terakhir</td><td>'+durasi(n.last_heard_seconds)+' lalu</td></tr>'
+      +'<tr><td>Sinyal</td><td>'+sinyal(n)+'</td></tr>'
+      +'<tr><td>Hop</td><td>'+hop(n)+'</td></tr>'
+      +'<tr><td>Baterai</td><td>'+baterai(n.battery)+'</td></tr>'
+      +'<tr><td>Posisi</td><td>'+angka(n.lat,5,'')+', '+angka(n.lon,5,'')+'</td></tr>'
+      +'<tr><td>Ketinggian</td><td>'+(n.alt===null||n.alt===undefined?'-':angka(n.alt,0,' m'))+'</td></tr>'
+      +'<tr><td>Perangkat</td><td>'+esc(n.hw_model||'-')+'</td></tr>'
+      +'</tbody></table>'
+      +'<button type="button" class="tombol-tengah">Tengahin ke peta</button>'
+      +tautanLacak(n);
+  }
+
+  var leafletDiminta=false, tunggu=[];
+  function pakaiLeaflet(fn){
+    if(window.L){ fn(); return; }
+    tunggu.push(fn);
+    if(leafletDiminta){ return; }
+    leafletDiminta=true;
+    var css=document.createElement('link');
+    css.rel='stylesheet';
+    css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+    var js=document.createElement('script');
+    js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    js.onload=function(){ var q=tunggu; tunggu=[]; for(var i=0;i<q.length;i++){ q[i](); } };
+    js.onerror=function(){ galatPeta('Pustaka peta (Leaflet) gagal dimuat - butuh sambungan internet ke unpkg.com. Tab tabel tetap berfungsi.'); };
+    document.head.appendChild(js);
+  }
+  function galatPeta(pesan){
+    var g=el('peta-galat');
+    if(g){ g.textContent=pesan; g.hidden=false; }
+  }
+
+  function pasangTengahPopup(mar,id){
+    mar.on('popupopen', function(ev){
+      var t=ev.popup.getElement().querySelector('.tombol-tengah');
+      if(t && POSISI[id]){
+        t.onclick=function(){ PETA.setView(POSISI[id], Math.max(PETA.getZoom(),14)); };
+      }
+    });
+  }
+
+  function gambarPeta(d){
+    var nodes=d.node||[];
+    var batas=[], tampil=0, tanpa=0, online=0;
+    POSISI={};
+    LAPISAN.clearLayers();
+    for(var i=0;i<nodes.length;i++){
+      var n=nodes[i];
+      var lat=parseFloat(n.lat), lon=parseFloat(n.lon);
+      if(!isFinite(lat)||!isFinite(lon)||(lat===0&&lon===0)){ tanpa++; continue; }
+      tampil++;
+      if(n.online){ online++; }
+      POSISI[n.node_id]=[lat,lon];
+      batas.push([lat,lon]);
+      var mar=window.L.circleMarker([lat,lon],{
+        radius:(SOROT&&SOROT===n.node_id)?11:7,
+        color:'#0f1319', weight:1, fillColor:warna(n), fillOpacity:0.95});
+      mar.bindTooltip(esc(n.long_name||n.node_id),{direction:'top'});
+      mar.bindPopup(popup(n),{maxWidth:340});
+      pasangTengahPopup(mar,n.node_id);
+      mar.addTo(LAPISAN);
+    }
+    var ringkas=el('peta-ringkas');
+    if(ringkas){
+      ringkas.textContent=tampil+' node di peta ('+online+' online)'
+        +(tanpa?(' - '+tanpa+' node tanpa koordinat tidak dipetakan'):'');
+    }
+    if(SOROT&&POSISI[SOROT]){
+      if(!SUDAH_PAS){ PETA.setView(POSISI[SOROT],14); SUDAH_PAS=true; }
+    } else if(!SUDAH_PAS&&batas.length){
+      PETA.fitBounds(batas,{padding:[30,30],maxZoom:14});
+      SUDAH_PAS=true;
+    }
+    perbaruiLacak(d);
+    var w=el('peta-diperbarui');
+    if(w&&d.waktu){ w.textContent=stempel(d.waktu); }
+  }
+
+  function perbaruiLacak(d){
+    var kotak=el('lacak-rincian');
+    if(!kotak||!SOROT){ return; }
+    var nodes=d.node||[], n=null;
+    for(var i=0;i<nodes.length;i++){ if(nodes[i].node_id===SOROT){ n=nodes[i]; break; } }
+    if(!n){
+      kotak.innerHTML=baris('Node','<span class="mono">'+esc(SOROT)+'</span> sudah tidak ada di database gateway saat ini.');
+      return;
+    }
+    kotak.innerHTML=rincian(n)+baris('Tautan tetap','<span class="mono">'+esc('/lacak/'+n.node_id)+'</span>');
+  }
+
+  function muatPeta(){
+    if(SIBUK||!LAPISAN){ return; }
+    SIBUK=true;
+    var x=new XMLHttpRequest();
+    x.open('GET','/data.json?peta=1',true);
+    x.onload=function(){
+      SIBUK=false;
+      if(x.status!==200){ galatPeta('Gagal membaca /data.json (status '+x.status+').'); return; }
+      var d;
+      try{ d=JSON.parse(x.responseText); }catch(e){ galatPeta('Data /data.json tidak bisa dibaca.'); return; }
+      var g=el('peta-galat'); if(g){ g.hidden=true; }
+      gambarPeta(d);
+    };
+    x.onerror=function(){ SIBUK=false; galatPeta('Tidak bisa menyambung ke exporter untuk menyegarkan peta.'); };
+    x.send();
+  }
+
+  function mulaiPeta(){
+    if(!el('peta-kanvas')){ return; }
+    pakaiLeaflet(function(){
+      if(!PETA){
+        PETA=window.L.map('peta-kanvas',{scrollWheelZoom:true}).setView([-2.2,118.0],5);
+        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+          maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(PETA);
+        LAPISAN=window.L.layerGroup().addTo(PETA);
+        var pas=el('peta-pas');
+        if(pas){ pas.onclick=function(){ SUDAH_PAS=false; if(SOROT&&POSISI[SOROT]){ PETA.setView(POSISI[SOROT],14); SUDAH_PAS=true; } else { muatPeta(); } }; }
+        var seg=el('peta-segar');
+        if(seg){ seg.onclick=function(){ muatPeta(); }; }
+      }
+      PETA.invalidateSize();
+      muatPeta();
+      if(!TIMER){ TIMER=setInterval(muatPeta,5000); }
+    });
+  }
+
+  window.mulaiPeta=mulaiPeta;
+  if(window.PETA_AUTO){
+    if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',mulaiPeta); }
+    else { mulaiPeta(); }
+  }
+})();
+</script>
+
+<script>
+// Status BUKA/TUTUP tiap bagian diingat di peramban. Halaman ini menyegar
+// sendiri tiap 5 detik, dan tanpa diingat setiap penyegaran akan menutup lagi
+// bagian yang baru saja dibuka - menjengkelkan saat sedang membaca tabel MQTT.
+// Yang disimpan hanya status bukanya (bukan isi halaman), per bagian.
+var bagian=document.querySelectorAll('details.bagian');
+var KUNCI_BUKA='meshid-buka-1';
+function bacaSimpanan(){
+  try{ return JSON.parse(localStorage.getItem(KUNCI_BUKA) || '{}'); }catch(e){ return {}; }
+}
+function tulisSimpanan(objek){
+  try{ localStorage.setItem(KUNCI_BUKA, JSON.stringify(objek)); }catch(e){}
+}
+var simpanan=bacaSimpanan();
+for(var b=0;b<bagian.length;b++){
+  var el=bagian[b];
+  // Simpanan menang atas keadaan bawaan di HTML; kalau belum ada simpanan,
+  // bagian pertama tetap terbuka seperti bawaannya.
+  if(el.id && Object.prototype.hasOwnProperty.call(simpanan, el.id)){
+    el.open = simpanan[el.id];
+  }
+  el.addEventListener('toggle', function(ev){
+    var s=bacaSimpanan();
+    s[ev.currentTarget.id]=ev.currentTarget.open;
+    tulisSimpanan(s);
+  });
+}
+
+// Saringan node. Dua kotak (satu di atas semua tabel, satu tepat di atas tabel
+// MQTT) memakai satu kata saringan yang sama, jadi mengetik di salah satunya
+// langsung mengisi yang lain.
+//
+// Kata saringannya diingat di tiga tempat, dari yang paling kuat:
+//   1. localStorage - bertahan walau alamat halaman dibuka ulang dari awal,
+//      dan tidak bergantung pada peramban yang mempertahankan #hash. Inilah
+//      yang membuat saringan tetap tersimpan saat halaman menyegar sendiri.
+//   2. #hash alamat - supaya tautan hasil saringan bisa dibagikan apa adanya.
+//   3. Kotak yang terakhir dipakai dicatat di sessionStorage, supaya
+//      penyegaran tiap 5 detik mengembalikan fokus ke kotak yang BENAR (tidak
+//      selalu kotak paling atas).
+var KUNCI_SARING='meshid-saring-1';
+var KUNCI_FOKUS='meshid-saring-fokus';
+var kotak=document.querySelectorAll('input[data-saring]');
+var semuaHasil=document.querySelectorAll('.hasil');
+function bacaSaring(){
+  try{ return localStorage.getItem(KUNCI_SARING) || ''; }catch(e){ return ''; }
+}
+function simpanSaring(nilai){
+  try{ localStorage.setItem(KUNCI_SARING, nilai); }catch(e){}
+}
+function terapkan(sumber){
+  var teks=sumber ? sumber.value : '';
+  var q=teks.toLowerCase();
+  // Samakan isi kotak lainnya (tanpa menyentuh kotak yang sedang dipakai,
+  // supaya posisi kursor orang yang mengetik tidak melompat).
+  for(var j=0;j<kotak.length;j++){
+    if(kotak[j]!==sumber && kotak[j].value!==teks){ kotak[j].value=teks; }
+  }
+  var tr=document.querySelectorAll('table.data tbody tr');
+  var tampil=0;
+  for(var i=0;i<tr.length;i++){
+    var cocok = tr[i].textContent.toLowerCase().indexOf(q)>=0;
+    tr[i].style.display = cocok ? '' : 'none';
+    if(cocok){ tampil++; }
+  }
+  var ringkas = q ? (tampil + ' node cocok') : '';
+  for(var k=0;k<semuaHasil.length;k++){ semuaHasil[k].textContent=ringkas; }
+  simpanSaring(teks);
+  try{ history.replaceState(null,'','#'+encodeURIComponent(teks)); }catch(e){}
+}
+function fokusTerakhir(){
+  try{ return sessionStorage.getItem(KUNCI_FOKUS) || ''; }catch(e){ return ''; }
+}
+for(var m=0;m<kotak.length;m++){
+  (function(el){
+    // Kotak yang sedang dipakai dicatat dari dua kejadian: 'input' (pasti
+    // sedang mengetik) dan 'focus'. Peramban tidak mengirim kejadian 'focus'
+    // bila jendelanya sendiri sedang tidak aktif, jadi 'input' yang jadi
+    // andalan - dan kejadian itulah yang penting supaya fokus dikembalikan ke
+    // kotak yang benar setelah penyegaran berikutnya.
+    el.addEventListener('input', function(){
+      try{ sessionStorage.setItem(KUNCI_FOKUS, el.id); }catch(e){}
+      terapkan(el);
+    });
+    el.addEventListener('focus', function(){
+      try{ sessionStorage.setItem(KUNCI_FOKUS, el.id); }catch(e){}
+    });
+  })(kotak[m]);
+}
+if(kotak.length){
+  // #hash menang atas simpanan: tautan yang dibagikan harus membuka saringan
+  // yang dimaksud pengirimnya, bukan saringan lama penerima.
+  var awal=decodeURIComponent((location.hash||'').slice(1)) || bacaSaring();
+  for(var n=0;n<kotak.length;n++){ kotak[n].value=awal; }
+  if(awal){
+    terapkan(kotak[0]);
+    // Penyegaran tiap 5 detik membuang fokus dan menaruh kursor di awal kata.
+    // Keduanya dikembalikan supaya bisa langsung melanjutkan mengetik.
+    var aktif=document.getElementById(fokusTerakhir()) || kotak[0];
+    aktif.focus();
+    try{ aktif.setSelectionRange(aktif.value.length, aktif.value.length); }catch(e){}
+  }
+}
+</script>
+<script>
+// Menu tab "Tabel" / "Peta". Tab yang dipakai disimpan di localStorage supaya
+// penyegaran halaman (meta refresh tiap 5 detik) tidak mengembalikannya ke
+// Tabel. Di tab Peta penyegaran halaman itu dimatikan - kalau tidak, peta
+// dibangun ulang tiap 5 detik dan posisi/zoom yang sedang dilihat hilang.
+(function(){
+  var KUNCI='meshid-tab-1';
+  var panel={tabel:document.getElementById('panel-tabel'),peta:document.getElementById('panel-peta')};
+  var tombol=document.querySelectorAll('[data-tab]');
+  var aktif=null;
+  function baca(){ try{ return localStorage.getItem(KUNCI)||'tabel'; }catch(e){ return 'tabel'; } }
+  function simpan(n){ try{ localStorage.setItem(KUNCI,n); }catch(e){} }
+  function matikanSegar(){
+    var m=document.querySelector('meta[http-equiv="refresh"]');
+    if(m&&m.parentNode){ m.parentNode.removeChild(m); }
+  }
+  function tampilkan(n){
+    if(!panel[n]){ n='tabel'; }
+    aktif=n;
+    for(var t in panel){ if(panel[t]){ panel[t].hidden=(t!==n); } }
+    for(var i=0;i<tombol.length;i++){
+      var ini=tombol[i].getAttribute('data-tab')===n;
+      tombol[i].className='tab-tombol'+(ini?' aktif':'');
+      tombol[i].setAttribute('aria-selected', ini?'true':'false');
+    }
+    simpan(n);
+    if(n==='peta'){
+      matikanSegar();
+      if(window.mulaiPeta){ window.mulaiPeta(); }
+    }
+  }
+  for(var i=0;i<tombol.length;i++){
+    tombol[i].addEventListener('click', function(){
+      var n=this.getAttribute('data-tab');
+      if(n===aktif){ return; }
+      if(n==='tabel'){
+        // Kembali ke tabel: muat ulang supaya penyegaran 5 detik hidup lagi.
+        simpan('tabel');
+        location.reload();
+        return;
+      }
+      tampilkan(n);
+    });
+  }
+  tampilkan(baca());
+})();
+</script>
+
+</body></html>

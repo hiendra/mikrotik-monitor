@@ -1,0 +1,6 @@
+# Image untuk zima-deployer: Node + Docker CLI (untuk restart web-router
+# dan menjalankan container validasi sesaat lewat docker.sock yang di-mount).
+FROM node:22-alpine
+RUN apk add --no-cache docker-cli
+COPY deployer.js /app/deployer.js
+CMD ["node", "/app/deployer.js"]

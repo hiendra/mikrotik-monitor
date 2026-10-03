@@ -1,0 +1,1136 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Panel Pengaturan Web Hosting - Clusternet</title>
+<style>
+  :root {
+    --bg: #0b1220; --panel: #121c30; --panel2: #172440; --line: #24344f;
+    --text: #e6edf7; --muted: #8ea3c0; --cyan: #22d3ee; --green: #34d399;
+    --yellow: #fbbf24; --red: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    padding: 18px 22px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #101a2e, #0b1220);
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+  }
+  h1 { font-size: 17px; margin: 0; letter-spacing: .2px; }
+  h1 span { color: var(--cyan); }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 3px; }
+  nav { display: flex; gap: 6px; flex-wrap: wrap; }
+  nav button, button {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 13px; cursor: pointer; font-size: 13px;
+  }
+  nav button:hover, button:hover { border-color: var(--cyan); }
+  nav button.aktif { background: var(--cyan); color: #04222a; border-color: var(--cyan); font-weight: 600; }
+  button.utama { background: var(--cyan); color: #04222a; border-color: var(--cyan); font-weight: 600; }
+  button.bahaya { border-color: #5b2230; color: #ffc9d2; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  main { padding: 20px 22px 60px; max-width: 1180px; }
+  section { display: none; }
+  section.aktif { display: block; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 16px; margin-bottom: 16px;
+  }
+  h2 { font-size: 14px; margin: 0 0 12px; color: var(--cyan); letter-spacing: .3px; }
+  h3 { font-size: 13px; margin: 18px 0 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
+  code, .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12.5px; }
+  .chip {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; border: 1px solid var(--line); color: var(--muted);
+  }
+  .chip.ok { color: var(--green); border-color: #1c4d3a; }
+  .chip.warn { color: var(--yellow); border-color: #5a4620; }
+  .chip.bad { color: var(--red); border-color: #5b2230; }
+  .chip.info { color: var(--cyan); border-color: #164e5c; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  input[type=text], select, textarea {
+    width: 100%; background: #0d1626; color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; font: inherit;
+  }
+  textarea { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; resize: vertical; }
+  .baris { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .aksi { display: flex; gap: 6px; flex-wrap: wrap; }
+  td .aksi { flex-wrap: wrap; }
+  td .aksi button { padding: 5px 9px; font-size: 12px; }
+  .pesan { border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 8px; border: 1px solid; }
+  .pesan.gagal { background: #2a1218; border-color: #5b2230; color: #ffd7dd; }
+  .pesan.peringatan { background: #2a2312; border-color: #5a4620; color: #ffeec2; }
+  .pesan.info { background: #0f2530; border-color: #164e5c; color: #cdf3fb; }
+  .catatan { color: var(--muted); font-size: 12.5px; }
+  ul.rapat { margin: 6px 0 0; padding-left: 18px; }
+  ul.rapat li { margin-bottom: 5px; }
+  .kecil { font-size: 12px; color: var(--muted); }
+  .kunci { color: var(--cyan); }
+  .pratinjau { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .pratinjau .mini { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .pratinjau .mini .judul { font-weight: 600; }
+  .pratinjau .mini .url { color: var(--cyan); font-size: 12px; word-break: break-all; margin-top: 3px; }
+  .pratinjau .mini p { color: var(--muted); font-size: 12px; margin: 7px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Panel Pengaturan <span>Web Hosting</span> — clusternet.my.id</h1>
+    <div class="sub" id="ringkas">&nbsp;</div>
+  </div>
+  <nav>
+    <button data-tab="layanan" class="aktif">Layanan</button>
+    <button data-tab="hasil">Hasil Caddyfile</button>
+    <button data-tab="dasbor">Dasbor</button>
+    <button data-tab="panduan">Panduan</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ TAB LAYANAN ============ -->
+  <section id="tab-layanan" class="aktif">
+    <div class="card">
+      <h2>Pemetaan nama → layanan</h2>
+      <p class="catatan">
+        Satu baris = satu nama domain. Semua nama otomatis tercakup wildcard
+        <code>*.clusternet.my.id</code> yang sudah didaftarkan ke tunnel, jadi
+        menambah atau menghapus baris <strong>tidak</strong> mengubah DNS maupun pengaturan
+        Cloudflare. Yang berubah hanya berkas Caddyfile di bawah ini.
+      </p>
+      <div id="kabar-migrasi" style="display:none"></div>
+      <div id="daftar-masalah"></div>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:20%">Layanan</th>
+              <th style="width:24%">Nama domain</th>
+              <th style="width:26%">Diteruskan ke</th>
+              <th style="width:30%">Sifat</th>
+            </tr>
+          </thead>
+          <tbody id="tabel-layanan"></tbody>
+        </table>
+      </div>
+      <div class="aksi" style="margin-top:14px">
+        <button class="utama" id="btn-baru">+ Tambah layanan</button>
+        <button id="btn-aktifkan-semua">Aktifkan semua</button>
+        <button id="btn-bawaan">Kembalikan ke bawaan</button>
+      </div>
+    </div>
+
+    <div class="card" id="kartu-ubah" style="display:none">
+      <h2 id="judul-form">Tambah layanan</h2>
+      <div class="baris">
+        <div>
+          <label for="f-nama">Nama layanan</label>
+          <input type="text" id="f-nama" placeholder="Immich" />
+        </div>
+        <div>
+          <label for="f-host">Nama domain (boleh lebih dari satu, pisahkan dengan koma)</label>
+          <input type="text" id="f-host" placeholder="immich.clusternet.my.id" />
+        </div>
+      </div>
+      <div class="baris" style="margin-top:12px">
+        <div>
+          <label for="f-jenis">Jenis</label>
+          <select id="f-jenis">
+            <option value="proxy">Teruskan ke layanan lain (paling umum)</option>
+            <option value="statis">Sajikan berkas dari folder ./situs</option>
+            <option value="404">Balas 404 (nama dicadangkan)</option>
+          </select>
+        </div>
+        <div id="bungkus-target">
+          <label for="f-target">Alamat tujuan (host:port)</label>
+          <input type="text" id="f-target" placeholder="192.168.145.252:2283" />
+        </div>
+        <div>
+          <label for="f-skema">Skema ke tujuan</label>
+          <select id="f-skema">
+            <option value="http">http (layanan polos)</option>
+            <option value="https">https (layanan bersertifikat sendiri)</option>
+          </select>
+        </div>
+      </div>
+      <div class="baris" style="margin-top:12px">
+        <div>
+          <label for="f-catatan">Catatan (bebas)</label>
+          <input type="text" id="f-catatan" placeholder="wajib pakai Cloudflare Access" />
+        </div>
+        <div>
+          <label for="f-penjaga">Penjagaan</label>
+          <div style="display:flex; gap:14px; align-items:center; padding-top:6px">
+            <label style="display:flex; gap:6px; align-items:center; margin:0">
+              <input type="checkbox" id="f-access" /> Cloudflare Access
+            </label>
+            <label style="display:flex; gap:6px; align-items:center; margin:0">
+              <input type="checkbox" id="f-csp" /> Pasang CSP (hanya untuk situs statis)
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="baris" style="margin-top:12px">
+        <div>
+          <label for="f-judul">Judul di dasbor</label>
+          <input type="text" id="f-judul" placeholder="Panel ZimaOS" />
+        </div>
+        <div>
+          <label for="f-ikon">Ikon dasbor (satu emoji, boleh kosong)</label>
+          <input type="text" id="f-ikon" placeholder="🖥" />
+        </div>
+        <div>
+          <label for="f-jalur">Jalur di dasbor (opsional)</label>
+          <input type="text" id="f-jalur" placeholder="/status/mesh" />
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <label for="f-deskripsi">Deskripsi di dasbor</label>
+        <input type="text" id="f-deskripsi" placeholder="Pusat kendali server: aplikasi, penyimpanan, dan pemeliharaan sistem." />
+      </div>
+      <div style="margin-top:12px">
+        <label style="display:flex; gap:6px; align-items:center; margin:0">
+          <input type="checkbox" id="f-dasbor" /> Tampilkan kartu layanan ini di dasbor clusternet.my.id
+        </label>
+      </div>
+      <div class="aksi" style="margin-top:14px">
+        <button class="utama" id="btn-simpan">Simpan</button>
+        <button id="btn-batal">Batal</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Impor</h2>
+      <p class="catatan">
+        <strong>Impor Caddyfile</strong> membaca Caddyfile yang sekarang Anda pakai, sehingga
+        pemetaan lama bisa diubah lewat panel ini.
+        <strong>Impor hasil pindai</strong> menambahkan layanan yang ditemukan
+        <code>pindai-layanan.ps1</code> (berkas <code>hasil-layanan.json</code>) sebagai baris
+        nonaktif — Anda tinggal memberi nama lalu mengaktifkannya.
+      </p>
+      <div class="aksi">
+        <button id="btn-buka-impor-caddy">Impor Caddyfile…</button>
+        <button id="btn-buka-impor-pindai">Impor hasil pindai…</button>
+      </div>
+
+      <div id="kartu-impor-caddy" style="display:none; margin-top:14px">
+        <label for="teks-impor-caddy">Tempel isi Caddyfile</label>
+        <textarea id="teks-impor-caddy" rows="8" placeholder="tempel di sini…"></textarea>
+        <div class="aksi" style="margin-top:10px">
+          <button class="utama" id="btn-terapkan-caddy">Baca dan ganti pemetaan</button>
+          <button id="btn-tutup-impor-caddy">Batal</button>
+        </div>
+        <div id="hasil-impor-caddy"></div>
+      </div>
+
+      <div id="kartu-impor-pindai" style="display:none; margin-top:14px">
+        <label for="berkas-pindai">Pilih berkas <code>hasil-layanan.json</code>, atau tempel isinya</label>
+        <input type="file" id="berkas-pindai" accept=".json,application/json" style="margin-bottom:8px" />
+        <textarea id="teks-impor-pindai" rows="6" placeholder="{ … }"></textarea>
+        <div class="aksi" style="margin-top:10px">
+          <button class="utama" id="btn-terapkan-pindai">Tambahkan yang belum terpetakan</button>
+          <button id="btn-tutup-impor-pindai">Batal</button>
+        </div>
+        <div id="hasil-impor-pindai"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB HASIL ============ -->
+  <section id="tab-hasil">
+    <div class="card">
+      <h2>Caddyfile yang dihasilkan</h2>
+      <div class="pesan info">
+        Tombol <strong>Terapkan ke ZimaOS</strong> mengirim Caddyfile ini langsung ke
+        server: divalidasi dulu dengan <code>caddy validate</code>, dipasang, lalu
+        <code>web-router</code> di-restart. Bila Caddy gagal hidup dengan konfigurasi
+        baru, berkas lama <strong>dipulihkan otomatis</strong>. Tanpa deployer, salin
+        manual seperti dulu.
+      </div>
+      <div id="kotak-terapkan" style="display:none; margin-bottom:14px">
+        <div class="baris">
+          <div>
+            <label for="terapkan-url">Alamat deployer (default sudah benar)</label>
+            <input type="text" id="terapkan-url" value="http://192.168.20.36:8791" />
+          </div>
+          <div>
+            <label for="terapkan-token">Token deploy (sama dengan DEPLOY_TOKEN di .env)</label>
+            <input type="password" id="terapkan-token" placeholder="tempel token di sini" />
+          </div>
+          <div style="display:flex; align-items:flex-end">
+            <div class="aksi" style="width:100%">
+              <button class="utama" id="btn-terapkan">Terapkan &amp; restart Caddy</button>
+              <button id="btn-cek-deployer">Cek koneksi</button>
+            </div>
+          </div>
+        </div>
+        <div id="hasil-terapkan" class="catatan" style="margin-top:8px">&nbsp;</div>
+      </div>
+      <div class="aksi" style="margin-bottom:12px">
+        <button class="utama" id="btn-hasilkan">Hasilkan ulang</button>
+        <button id="btn-salin">Salin Caddyfile</button>
+        <button id="btn-unduh">Unduh sebagai Caddyfile</button>
+        <button id="btn-salin-restart">Salin perintah restart</button>
+      </div>
+      <textarea id="teks-hasil" rows="26" readonly></textarea>
+      <div id="status-salin" class="catatan" style="margin-top:8px">&nbsp;</div>
+    </div>
+    <div class="card">
+      <h2>Manifest dasbor (situs/layanan.json)</h2>
+      <div class="pesan info">
+        Dasbor <code>clusternet.my.id</code> menggambar kartunya dari berkas ini, bukan dari
+        HTML yang ditulis tangan. Berkas yang sama ikut dikirim saat Anda menekan
+        <strong>Terapkan ke ZimaOS</strong>, jadi subdomain baru muncul sebagai kartu tanpa
+        menyunting <code>situs/index.html</code>. Hanya baris yang bertanda <em>dasbor</em>
+        di tab Layanan yang ikut ke sini.
+      </div>
+      <div class="aksi" style="margin-bottom:12px">
+        <button class="utama" id="btn-manifest-ulang">Hasilkan ulang</button>
+        <button id="btn-salin-manifest">Salin manifest</button>
+        <button id="btn-unduh-manifest">Unduh sebagai layanan.json</button>
+      </div>
+      <textarea id="teks-manifest" rows="16" readonly></textarea>
+    </div>
+    <div class="card">
+      <h2>Nama yang belum dicatat di panduan</h2>
+      <p class="catatan">
+        Validator memeriksa bahwa setiap nama domain di Caddyfile juga dijelaskan di
+        <code>PANDUAN-WEBHOSTING.md</code>. Bila daftar di bawah tidak kosong, tambahkan
+        barisnya ke tabel panduan agar pemeriksaan tetap lolos.
+      </p>
+      <div id="daftar-belum-panduan"></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB DASBOR ============ -->
+  <section id="tab-dasbor">
+    <div class="card">
+      <h2>Kartu yang tampil di clusternet.my.id</h2>
+      <p class="catatan">
+        Centang di sini hanya mengatur <strong>kartu yang dipajang</strong> di
+        <code>clusternet.my.id</code>. Subdomainnya sendiri <strong>tetap aktif</strong>:
+        rutenya tetap ada di Caddyfile dan alamatnya tetap bisa dibuka langsung.
+        Untuk benar-benar mematikan sebuah subdomain, pakai tombol <em>Matikan</em> di
+        tab <em>Layanan</em> - itu yang mengubah Caddyfile.
+      </p>
+      <div id="ringkas-dasbor" class="catatan" style="margin:10px 0">&nbsp;</div>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:36%">Layanan</th>
+              <th style="width:30%">Nama domain</th>
+              <th style="width:16%">Rute</th>
+              <th style="width:18%">Kartu di dasbor</th>
+            </tr>
+          </thead>
+          <tbody id="tabel-dasbor"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Pratinjau kartu</h2>
+      <p class="catatan">
+        Beginilah dasbor akan terlihat. Urutannya mengikuti urutan baris di tab
+        <em>Layanan</em> - geser dengan tombol ↑ ↓ bila ingin menaruh kartu penting
+        di depan.
+      </p>
+      <div id="pratinjau-dasbor" class="pratinjau"></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB PANDUAN ============ -->
+  <section id="tab-panduan">
+    <div class="card">
+      <h2>Urutan pengerjaan</h2>
+      <ul class="rapat">
+        <li><strong>Pindai layanan</strong> — <code>powershell -ExecutionPolicy Bypass -File .\pindai-layanan.ps1</code> untuk tahu aplikasi apa saja yang hidup beserta portnya.</li>
+        <li><strong>Atur pemetaan</strong> di tab <em>Layanan</em>, lalu salin hasilnya dari tab <em>Hasil Caddyfile</em>.</li>
+        <li><strong>Dasbor ikut sendiri</strong> — baris bertanda <em>dasbor</em> otomatis masuk ke <code>situs/layanan.json</code>, jadi kartu di <code>clusternet.my.id</code> tidak perlu disunting lagi.</li>
+        <li><strong>Periksa</strong> — <code>node validasi-hosting.mjs</code> (di akar repo). Kode keluar 1 berarti ada yang harus dibetulkan.</li>
+        <li><strong>Pasang</strong> — di ZimaOS: <code>docker compose restart caddy</code>.</li>
+        <li><strong>Kunci panel admin</strong> dengan Cloudflare Access (Zero Trust → Access → Applications → Self-hosted).</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Hal yang sering bikin gagal</h2>
+      <ul class="rapat">
+        <li>Menulis <code>127.0.0.1</code> atau <code>localhost</code> sebagai tujuan: Caddy berjalan di dalam container, jadi alamat itu menunjuk ke container itu sendiri. Pakai IP host, misalnya <code>192.168.145.252</code>.</li>
+        <li>Memetakan terminal web (port <code>7681</code>/<code>7682</code>): siapa pun yang menemukannya bisa masuk ke shell server. Lewatkan ZeroTier atau Cloudflare Access.</li>
+        <li>Menaruh CSP di blok layanan yang bukan situs statis: antarmuka ZimaOS akan rusak karena memuat banyak skrip inline.</li>
+        <li>Wildcard <code>*.clusternet.my.id</code> hanya berlaku satu tingkat — <code>a.b.clusternet.my.id</code> tidak tercakup.</li>
+        <li>Immich: isi <em>External domain</em> di pengaturannya dengan <code>https://immich.clusternet.my.id</code>, kalau tidak tautan berbagi akan menunjuk alamat internal.</li>
+        <li>Cloudflare gratis menolak unggahan di atas 100 MB, jadi video besar di Immich sebaiknya diunggah dari LAN.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Kenapa tanpa port forwarding</h2>
+      <p class="catatan">
+        Cloudflare Tunnel membuat koneksi <strong>keluar</strong> dari server ke Cloudflare,
+        jadi router tidak perlu membuka apa pun. Satu tunnel menunjuk ke satu alamat
+        (<code>http://caddy:80</code>), dan Caddy-lah yang memilih layanan berdasarkan nama
+        domain yang diminta pengunjung. Itu sebabnya menambah layanan tidak menyentuh
+        router, DNS, ataupun pengaturan tunnel.
+      </p>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+// ============================================================
+// Data bawaan: cerminan zima-hosting/Caddyfile di repo ini
+// ============================================================
+const HOST_STATIS = '/srv/situs';
+const CSP_STATIS = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'self'";
+const TARGET_ZIMA = '192.168.145.252';
+
+const BAWAAN = () => ([
+  { nama: 'Situs utama', host: 'clusternet.my.id, www.clusternet.my.id', jenis: 'statis',
+    target: '', skema: 'http', csp: true, access: false, aktif: true,
+    catatan: 'berkas dari folder ./situs',
+    dasbor: false, judul: '', ikon: '', jalur: '', deskripsi: '' },
+  { nama: 'UI ZimaOS', host: 'zima.clusternet.my.id', jenis: 'proxy', target: TARGET_ZIMA + ':8280',
+    skema: 'http', csp: false, access: true, aktif: true, catatan: 'panel admin - wajib Access',
+    dasbor: true, judul: 'Panel ZimaOS', ikon: '🖥', jalur: '',
+    deskripsi: 'Pusat kendali server: aplikasi, penyimpanan, dan pemeliharaan sistem.' },
+  { nama: 'AdGuard Home (DNS)', host: 'adguard.clusternet.my.id', jenis: 'proxy',
+    target: TARGET_ZIMA + ':8080', skema: 'http', csp: false, access: false, aktif: true,
+    catatan: 'pemblokir iklan DNS; dulu files.clusternet.my.id',
+    dasbor: true, judul: 'AdGuard Home', ikon: '🛡', jalur: '',
+    deskripsi: 'Pemblokir iklan & pelacak tingkat DNS untuk seluruh jaringan rumah.' },
+  { nama: 'Immich (galeri foto)', host: 'immich.clusternet.my.id', jenis: 'proxy',
+    target: TARGET_ZIMA + ':2283', skema: 'http', csp: false, access: true, aktif: true,
+    catatan: 'isi External domain di Immich; unggahan >100 MB ditolak Cloudflare gratis',
+    dasbor: true, judul: 'Galeri Foto', ikon: '📸', jalur: '',
+    deskripsi: 'Cadangan foto & video ala Google Photos — tetapi datanya milik Anda sendiri.' },
+  { nama: 'Grafana (dasbor)', host: 'grafana.clusternet.my.id', jenis: 'proxy',
+    target: TARGET_ZIMA + ':3003', skema: 'http', csp: false, access: true, aktif: true, catatan: '',
+    dasbor: true, judul: 'Pemantauan', ikon: '📈', jalur: '',
+    deskripsi: 'Dasbor Grafana: kesehatan server, jaringan, dan layanan dalam satu pandangan.' },
+  { nama: 'Uptime Kuma (pemantauan)', host: 'kuma.clusternet.my.id', jenis: 'proxy',
+    target: TARGET_ZIMA + ':3001', skema: 'http', csp: false, access: false, aktif: true,
+    catatan: 'halaman status publik; panel /dashboard sebaiknya di balik Access',
+    dasbor: true, judul: 'Status Layanan', ikon: '🔴', jalur: '/status/mesh',
+    deskripsi: 'Uptime Kuma: riwayat hidup-mati tiap layanan & server, diperbarui secara real-time.' },
+  { nama: 'Air Quality Monitor (ESP32)', host: 'udara.clusternet.my.id, aqi.clusternet.my.id', jenis: 'proxy',
+    target: '192.168.20.13:88', skema: 'http', csp: false, access: false, aktif: true,
+    catatan: 'perangkat ESP32 di 192.168.20.13 (bukan host ZimaOS); data lingkungan publik, tanpa Access',
+    dasbor: true, judul: 'Kualitas Udara', ikon: '🌤', jalur: '',
+    deskripsi: 'Monitor kualitas udara ESP32 di Cluster Taman Marina: suhu, kelembapan, eCO2, TVOC, dan AQI.' },
+  { nama: 'Meshtastic Node Monitor', host: 'meshid.clusternet.my.id', jenis: 'proxy',
+    target: '192.168.20.36:9208', skema: 'http', csp: false, access: false, aktif: true,
+    catatan: 'exporter systemd di host ZimaOS (24/7); halaman memuat koordinat GPS node tetapi sengaja publik, sama seperti udara',
+    dasbor: true, judul: 'Mesh ID', ikon: '📡', jalur: '',
+    deskripsi: 'Data node Meshtastic: gateway, node RF yang tersambung langsung, dan node lewat MQTT.' },
+  { nama: 'Billing PHP - Masuk CLUSTERNET', host: 'billing.clusternet.my.id', jenis: 'proxy',
+    target: TARGET_ZIMA + ':8082', skema: 'http', csp: false, access: true, aktif: true, catatan: 'Apache + PHP',
+    dasbor: true, judul: 'Portal Aplikasi', ikon: '🔒', jalur: '',
+    deskripsi: 'Aplikasi bisnis CLUSTERNET. Akses untuk staf dengan akun terdaftar.' },
+  { nama: 'Terminal web (ttyd)', host: 'terminal.clusternet.my.id', jenis: 'proxy',
+    target: TARGET_ZIMA + ':7681', skema: 'http', csp: false, access: true, aktif: false,
+    catatan: 'BERBAHAYA - shell server; biarkan nonaktif kecuali di balik Access',
+    dasbor: false, judul: 'Terminal web', ikon: '⌨', jalur: '', deskripsi: '' }
+]);
+
+const KUNCI_SIMPAN = 'panel-hosting-clusternet-v1';
+let state = { layanan: [], ubah: -1, sidikBawaan: '', dilewati: null };
+
+// ============================================================
+// Penyimpanan
+// ============================================================
+
+// Sidik jari pemetaan bawaan: kumpulan nama domain + tujuan + jenis.
+// Bila repo mengubah nama atau tujuan layanan (mis. AdGuard yang dulu
+// files.clusternet.my.id di-rename, atau billing yang dulu portal),
+// sidik jari ini ikut berubah. State lama yang sidik jarinya berbeda
+// otomatis dibuang supaya panel TIDAK PERNAH menerapkan pemetaan yang
+// lebih tua daripada Caddyfile di repo.
+function sidikJari(daftar) {
+  return daftar.map(l =>
+    hostDaftar(l.host).map(h => h.toLowerCase()).sort().join(',') +
+    '>' + String(l.target || '') + '/' + l.jenis +
+    '/' + (l.dasbor ? 'D' : '-') + ':' + String(l.judul || '') + ':' + String(l.jalur || '')
+  ).sort().join('|');
+}
+
+function muat() {
+  const bawaan = BAWAAN();
+  state.sidikBawaan = sidikJari(bawaan);
+  try {
+    const teks = localStorage.getItem(KUNCI_SIMPAN);
+    if (teks) {
+      const isi = JSON.parse(teks);
+      if (isi && Array.isArray(isi.layanan) && isi.layanan.length) {
+        if (isi.sidik === state.sidikBawaan) { state.layanan = isi.layanan; return; }
+        // Data dari versi pemetaan lama: jangan dipakai, tapi catat untuk pemberitahuan.
+        state.dilewati = { lama: isi.layanan, baru: bawaan };
+      }
+    }
+  } catch (e) { /* data rusak - pakai bawaan */ }
+  state.layanan = bawaan;
+}
+function simpan() {
+  try { localStorage.setItem(KUNCI_SIMPAN, JSON.stringify({ sidik: state.sidikBawaan, layanan: state.layanan })); } catch (e) {}
+}
+
+// Beri tahu sekali bila pemetaan lama diabaikan, lengkap dengan bedanya.
+function kabarMigrasi() {
+  const wadah = el('kabar-migrasi');
+  if (!state.dilewati) { wadah.style.display = 'none'; return; }
+  const lama = new Set(), baru = new Set();
+  state.dilewati.lama.forEach(l => hostDaftar(l.host).forEach(h => lama.add(h.toLowerCase())));
+  state.dilewati.baru.forEach(l => hostDaftar(l.host).forEach(h => baru.add(h.toLowerCase())));
+  const hilang = [...lama].filter(h => !baru.has(h));
+  const tambah = [...baru].filter(h => !lama.has(h));
+  wadah.innerHTML =
+    '<div class="pesan peringatan">' +
+    '<strong>Pemetaan lama diabaikan.</strong> Data tersimpan di peramban ini dibuat sebelum pemetaan repo berubah, jadi tidak dipakai — panel memuat pemetaan terbaru dari repo supaya Anda tidak sengaja menerapkan nama lama.' +
+    (hilang.length ? '<br>Nama lama yang tidak lagi dipakai: <span class="mono">' + hilang.map(esc).join(', ') + '</span>' : '') +
+    (tambah.length ? '<br>Nama baru yang kini tersedia: <span class="mono">' + tambah.map(esc).join(', ') + '</span>' : '') +
+    ' <button id="btn-tutup-migrasi" style="margin-left:6px">Mengerti</button></div>';
+  wadah.style.display = 'block';
+  el('btn-tutup-migrasi').onclick = () => { wadah.style.display = 'none'; };
+}
+
+// ============================================================
+// Pemeriksaan (meniru aturan validasi-hosting.mjs)
+// ============================================================
+function hostDaftar(host) {
+  return String(host || '').split(',').map(h => h.trim()).filter(Boolean);
+}
+function periksa() {
+  const masalah = [];
+  const lihat = new Set();
+  state.layanan.filter(l => l.aktif).forEach((l, i) => {
+    const nama = l.nama || '(tanpa nama)';
+    const host = hostDaftar(l.host);
+    if (!host.length) masalah.push(['GAGAL', `${nama}: nama domain belum diisi.`]);
+    host.forEach(h => {
+      if (/^https?:\/\//.test(h) || h.includes('/')) masalah.push(['GAGAL', `${nama}: "${h}" tidak boleh memuat http:// atau garis miring - tulis namanya saja.`]);
+      if (h.includes(':')) masalah.push(['GAGAL', `${nama}: "${h}" memuat titik dua (port). Port hanya ada di kolom tujuan, bukan di nama domain.`]);
+      if (h !== h.toLowerCase()) masalah.push(['GAGAL', `${nama}: "${h}" harus huruf kecil.`]);
+      if (h.includes('*') && !/^\*\.[a-z0-9.-]+$/.test(h)) masalah.push(['GAGAL', `${nama}: wildcard hanya boleh di depan sebagai *.nama.`]);
+      if (/^\*\./.test(h)) masalah.push(['PERINGATAN', `${nama}: "${h}" adalah wildcard - blok 404 sudah menanganinya, baris ini mungkin tidak perlu.`]);
+      const kunci = h.toLowerCase();
+      if (lihat.has(kunci)) masalah.push(['GAGAL', `Nama "${h}" dipakai lebih dari satu baris.`]);
+      lihat.add(kunci);
+      if (/^(zima|admin|portal|grafana|terminal)/.test(h) && !l.access) masalah.push(['PERINGATAN', `${nama}: "${h}" tampak seperti panel admin, sebaiknya tandai "Cloudflare Access".`]);
+    });
+    if (l.jenis === 'proxy') {
+      const t = String(l.target || '').trim();
+      if (!t) masalah.push(['GAGAL', `${nama}: alamat tujuan belum diisi.`]);
+      else {
+        if (!/^[a-z0-9.-]+:\d+$/.test(t.replace(/^https?:\/\//, ''))) masalah.push(['GAGAL', `${nama}: tujuan "${t}" harus berbentuk host:port, mis. ${TARGET_ZIMA}:2283.`]);
+        if (/^(127\.0\.0\.1|localhost)/.test(t)) masalah.push(['GAGAL', `${nama}: tujuan "${t}" tidak bisa dipakai - Caddy berjalan di dalam container, jadi localhost menunjuk ke container itu sendiri. Pakai IP host.`]);
+        if (/:80$/.test(t) || /:443$/.test(t)) masalah.push(['PERINGATAN', `${nama}: tujuan memakai port ${/:80$/.test(t) ? '80' : '443'} - pastikan itu memang layanan web, bukan gerbang ZimaOS.`]);
+      }
+      if (l.csp) masalah.push(['PERINGATAN', `${nama}: CSP sebaiknya hanya dipakai pada situs statis; aplikasi dengan antarmuka sendiri bisa rusak.`]);
+    }
+    if (l.jenis === 'statis' && !l.csp) masalah.push(['PERINGATAN', `${nama}: situs statis sebaiknya diberi CSP.`]);
+  });
+  if (!state.layanan.some(l => l.aktif && l.jenis === 'statis' && hostDaftar(l.host).includes('clusternet.my.id'))) {
+    masalah.push(['PERINGATAN', 'Tidak ada baris aktif untuk nama utama clusternet.my.id - pengunjung akan mendapat 404.']);
+  }
+  // Menyembunyikan kartu dan mematikan layanan itu dua hal berbeda; yang satu
+  // ini mudah tertukar, jadi ditandai.
+  state.layanan.filter(l => !l.aktif && l.dasbor).forEach(l => {
+    masalah.push(['PERINGATAN', `${l.nama || '(tanpa nama)'}: ditandai tampil di dasbor tetapi barisnya nonaktif - kartunya tidak akan muncul.`]);
+  });
+  return masalah;
+}
+
+// ============================================================
+// Render
+// ============================================================
+const el = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function render() {
+  const baris = el('tabel-layanan');
+  baris.innerHTML = '';
+  state.layanan.forEach((l, i) => {
+    const tr = document.createElement('tr');
+    if (!l.aktif) tr.style.opacity = '.5';
+    tr.innerHTML =
+      `<td><strong>${esc(l.nama)}</strong>${l.aktif ? '' : ' <span class="chip">nonaktif</span>'}<div class="kecil">${esc(l.catatan || '')}</div></td>` +
+      `<td class="mono">${hostDaftar(l.host).map(esc).join('<br>') || '<span class="chip bad">belum diisi</span>'}</td>` +
+      `<td class="mono">${l.jenis === 'proxy' ? esc(l.skema + '://' + (l.target || '-')) : (l.jenis === 'statis' ? esc(HOST_STATIS) : '<span class="chip">404</span>')}</td>` +
+      `<td><span class="chip info">${l.jenis === 'proxy' ? 'layanan lain' : (l.jenis === 'statis' ? 'berkas statis' : 'dibalas 404')}</span>` +
+      (l.access ? ' <span class="chip ok">Access</span>' : '') +
+      (l.csp ? ' <span class="chip warn">CSP</span>' : '') +
+      (l.dasbor ? ` <span class="chip info">${l.aktif ? 'di dasbor' : 'dasbor (nonaktif)'}</span>` : ' <span class="chip">tidak di dasbor</span>') +
+      `<div class="aksi" style="margin-top:8px">
+         <button data-aksi="ubah" data-i="${i}">Ubah</button>
+         <button data-aksi="toggle" data-i="${i}">${l.aktif ? 'Matikan' : 'Nyalakan'}</button>
+         <button data-aksi="dasbor" data-i="${i}">${l.dasbor ? 'Sembunyikan dari dasbor' : 'Tampilkan di dasbor'}</button>
+         <button data-aksi="naik" data-i="${i}" ${i === 0 ? 'disabled' : ''} title="Naikkan">↑</button>
+         <button data-aksi="turun" data-i="${i}" ${i === state.layanan.length - 1 ? 'disabled' : ''} title="Turunkan">↓</button>
+         <button class="bahaya" data-aksi="hapus" data-i="${i}">Hapus</button>
+       </div></td>`;
+    baris.appendChild(tr);
+  });
+
+  const masalah = periksa();
+  const gagal = masalah.filter(m => m[0] === 'GAGAL');
+  el('daftar-masalah').innerHTML = masalah.length === 0
+    ? '<div class="pesan info">Pemetaan sudah sehat: tidak ada nama ganda, tujuan berformat benar, dan tidak ada yang menunjuk ke localhost.</div>'
+    : masalah.map(m => `<div class="pesan ${m[0] === 'GAGAL' ? 'gagal' : 'peringatan'}"><strong>${m[0]}</strong> — ${esc(m[1])}</div>`).join('');
+
+  const aktif = state.layanan.filter(l => l.aktif).length;
+  el('ringkas').innerHTML = `${aktif} dari ${state.layanan.length} layanan aktif &middot; ${jumlahKartu()} kartu di dasbor &middot; ` +
+    (gagal.length ? `<span style="color:var(--red)">${gagal.length} masalah harus dibetulkan</span>` : '<span style="color:var(--green)">siap dihasilkan</span>');
+
+  renderDasbor();
+  simpan();
+  hasilkan();
+}
+
+// ============================================================
+// Tab Dasbor: memilih kartu yang dipajang di clusternet.my.id
+// ============================================================
+// Sengaja dipisah dari tombol Matikan/Nyalakan. Dua hal yang berbeda:
+//   aktif  -> subdomain punya rute di Caddyfile dan bisa dibuka
+//   dasbor -> kartunya dipajang di halaman utama
+// Menyembunyikan tampilan TIDAK mematikan layanannya.
+function jumlahKartu() {
+  return state.layanan.filter(l => l.aktif && l.dasbor && hostDaftar(l.host).length).length;
+}
+
+function renderDasbor() {
+  const baris = el('tabel-dasbor');
+  baris.innerHTML = '';
+  state.layanan.forEach((l, i) => {
+    const tr = document.createElement('tr');
+    if (!l.aktif) tr.style.opacity = '.5';
+
+    const selNama = document.createElement('td');
+    selNama.innerHTML = `<strong>${esc(l.nama)}</strong>${l.aktif ? '' : ' <span class="chip">nonaktif</span>'}` +
+      (l.judul ? `<div class="kecil">judul kartu: ${esc(l.judul)}</div>` : '');
+
+    const selHost = document.createElement('td');
+    selHost.className = 'mono';
+    selHost.innerHTML = hostDaftar(l.host).map(esc).join('<br>') || '<span class="chip bad">belum diisi</span>';
+
+    const selRute = document.createElement('td');
+    selRute.innerHTML = l.aktif
+      ? '<span class="chip ok">aktif</span>'
+      : '<span class="chip bad">tidak aktif</span><div class="kecil">tanpa rute - kartu tidak bisa tampil</div>';
+
+    const selCentang = document.createElement('td');
+    const label = document.createElement('label');
+    label.style.cssText = 'display:flex; gap:7px; align-items:center; margin:0; color:var(--text)';
+    const kotak = document.createElement('input');
+    kotak.type = 'checkbox';
+    kotak.checked = !!l.dasbor;
+    kotak.disabled = !l.aktif;
+    kotak.title = l.aktif ? 'Tampilkan kartu di dasbor' : 'Baris nonaktif - aktifkan dulu di tab Layanan';
+    kotak.addEventListener('change', () => {
+      state.layanan[i].dasbor = kotak.checked;
+      render();
+    });
+    label.appendChild(kotak);
+    label.appendChild(document.createTextNode(l.dasbor ? 'Tampil' : 'Disembunyikan'));
+    selCentang.appendChild(label);
+
+    tr.appendChild(selNama);
+    tr.appendChild(selHost);
+    tr.appendChild(selRute);
+    tr.appendChild(selCentang);
+    baris.appendChild(tr);
+  });
+
+  const tampil = jumlahKartu();
+  el('ringkas-dasbor').innerHTML = tampil
+    ? `<strong>${tampil}</strong> dari ${state.layanan.length} baris dipajang sebagai kartu. Sisanya tetap aktif dan tetap bisa dibuka - hanya tidak ditampilkan di sini.`
+    : '<span style="color:var(--yellow)">Tidak ada kartu yang dipajang - dasbor clusternet.my.id akan tampil kosong.</span>';
+
+  const wadah = el('pratinjau-dasbor');
+  const daftar = state.layanan.filter(l => l.aktif && l.dasbor && hostDaftar(l.host).length);
+  wadah.innerHTML = daftar.length
+    ? daftar.map(l => `<div class="mini">
+        <div class="judul">${esc((l.ikon ? l.ikon + ' ' : '') + (l.judul || l.nama))}</div>
+        <div class="url mono">${esc(urlDasbor(l).replace(/^https?:\/\//, ''))}</div>
+        ${l.deskripsi ? `<p>${esc(l.deskripsi)}</p>` : ''}
+      </div>`).join('')
+    : '<div class="pesan peringatan">Belum ada kartu yang dipilih. Dasbor akan menampilkan pesan "daftar layanan tidak bisa dimuat" sampai minimal satu layanan dicentang.</div>';
+}
+
+el('tabel-layanan').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-aksi]');
+  if (!b) return;
+  const i = Number(b.dataset.i);
+  const aksi = b.dataset.aksi;
+  if (aksi === 'ubah') return bukaForm(i);
+  if (aksi === 'toggle') state.layanan[i].aktif = !state.layanan[i].aktif;
+  if (aksi === 'dasbor') state.layanan[i].dasbor = !state.layanan[i].dasbor;
+  if (aksi === 'hapus') {
+    if (confirm(`Hapus pemetaan "${state.layanan[i].nama}"?`)) state.layanan.splice(i, 1);
+    else return;
+  }
+  if (aksi === 'naik' && i > 0) [state.layanan[i - 1], state.layanan[i]] = [state.layanan[i], state.layanan[i - 1]];
+  if (aksi === 'turun' && i < state.layanan.length - 1) [state.layanan[i], state.layanan[i + 1]] = [state.layanan[i + 1], state.layanan[i]];
+  render();
+});
+
+// ============================================================
+// Form
+// ============================================================
+function bukaForm(i) {
+  state.ubah = i ?? -1;
+  const l = i >= 0 ? state.layanan[i] : { nama: '', host: '', jenis: 'proxy', target: TARGET_ZIMA + ':', skema: 'http', csp: false, access: false, catatan: '', dasbor: false, judul: '', ikon: '', jalur: '', deskripsi: '' };
+  el('judul-form').textContent = i >= 0 ? 'Ubah layanan' : 'Tambah layanan';
+  el('f-nama').value = l.nama;
+  el('f-host').value = l.host;
+  el('f-jenis').value = l.jenis;
+  el('f-target').value = l.target;
+  el('f-skema').value = l.skema || 'http';
+  el('f-catatan').value = l.catatan || '';
+  el('f-access').checked = !!l.access;
+  el('f-csp').checked = !!l.csp;
+  el('f-judul').value = l.judul || '';
+  el('f-ikon').value = l.ikon || '';
+  el('f-jalur').value = l.jalur || '';
+  el('f-deskripsi').value = l.deskripsi || '';
+  el('f-dasbor').checked = !!l.dasbor;
+  el('kartu-ubah').style.display = 'block';
+  el('kartu-ubah').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  el('f-nama').focus();
+}
+function tutupForm() { el('kartu-ubah').style.display = 'none'; state.ubah = -1; }
+
+el('btn-baru').onclick = () => bukaForm(-1);
+el('btn-batal').onclick = tutupForm;
+el('btn-simpan').onclick = () => {
+  const data = {
+    nama: el('f-nama').value.trim() || '(tanpa nama)',
+    host: el('f-host').value.trim(),
+    jenis: el('f-jenis').value,
+    target: el('f-target').value.trim(),
+    skema: el('f-skema').value,
+    catatan: el('f-catatan').value.trim(),
+    access: el('f-access').checked,
+    csp: el('f-csp').checked,
+    dasbor: el('f-dasbor').checked,
+    judul: el('f-judul').value.trim(),
+    ikon: el('f-ikon').value.trim(),
+    jalur: el('f-jalur').value.trim(),
+    deskripsi: el('f-deskripsi').value.trim(),
+    aktif: true
+  };
+  if (state.ubah >= 0) data.aktif = state.layanan[state.ubah].aktif;
+  if (state.ubah >= 0) state.layanan[state.ubah] = data; else state.layanan.push(data);
+  tutupForm();
+  render();
+};
+el('f-jenis').onchange = () => {
+  const proxy = el('f-jenis').value === 'proxy';
+  el('bungkus-target').style.display = proxy ? '' : 'none';
+  el('f-csp').checked = el('f-jenis').value === 'statis';
+};
+el('btn-aktifkan-semua').onclick = () => { state.layanan.forEach(l => l.aktif = true); render(); };
+el('btn-bawaan').onclick = () => {
+  if (!confirm('Kembalikan pemetaan ke susunan bawaan? Perubahan Anda di panel ini akan hilang.')) return;
+  state.layanan = BAWAAN(); tutupForm(); render();
+};
+
+// ============================================================
+// Penghasil Caddyfile
+// ============================================================
+function blokUntuk(l) {
+  const host = hostDaftar(l.host).map(awaliHttp).join(', ');
+  const baris = [];
+  baris.push(`# ${l.nama}${l.catatan ? ' - ' + l.catatan : ''}${l.access ? ' (wajib Cloudflare Access!)' : ''}`);
+  baris.push(`${host} {`);
+  baris.push('\timport http-umum');
+  if (l.jenis === 'statis') {
+    if (l.csp) baris.push(`\theader Content-Security-Policy "${CSP_STATIS}"`);
+    baris.push(`\troot * ${HOST_STATIS}`);
+    baris.push('\tfile_server');
+  } else if (l.jenis === '404') {
+    baris.push('\trespond "Nama ini dicadangkan." 404');
+  } else {
+    const tujuan = String(l.target).replace(/^https?:\/\//, '');
+    if ((l.skema || 'http') === 'https') {
+      baris.push(`\treverse_proxy https://${tujuan} {`);
+      baris.push('\t\ttransport http {');
+      baris.push('\t\t\ttls_insecure_skip_verify');
+      baris.push('\t\t}');
+      baris.push('\t}');
+    } else {
+      baris.push(`\treverse_proxy ${tujuan}`);
+    }
+  }
+  baris.push('}');
+  return baris.join('\n');
+}
+
+// cloudflared menyambung lewat HTTP port 80, jadi semua alamat situs WAJIB
+// berawalan http:// - tanpa itu Caddy menaruh blok di 443 dan tunnel hanya
+// mendapat fallback 404 (inilah yang dulu mematikan semua domain).
+function awaliHttp(h) {
+  return /^https?:\/\//.test(h) ? h : 'http://' + h;
+}
+
+function hasilkan() {
+  const kepala = [
+    '# ============================================================',
+    '# Caddyfile - router berdasarkan nama host',
+    '# ============================================================',
+    '# Berjalan di dalam container, TIDAK menerbitkan sertifikat sendiri:',
+    '# TLS sudah ditangani Cloudflare di sisi edge (auto_https off).',
+    '#',
+    '# Berkas ini dihasilkan oleh panel-kelola.html.',
+    '# Menambah layanan baru = tambah satu blok di bawah. Selesai.',
+    '# Tidak perlu port forwarding, tidak perlu mengubah DNS atau tunnel.',
+    '# ============================================================',
+    '',
+    '{',
+    '\tadmin off',
+    '\tauto_https off',
+    '}',
+    '',
+    '# ------------------------------------------------------------',
+    '# Pengaturan yang dipakai semua layanan',
+    '# ------------------------------------------------------------',
+    '(http-umum) {',
+    '\tencode zstd gzip',
+    '\theader {',
+    '\t\tX-Content-Type-Options nosniff',
+    '\t\tX-Frame-Options SAMEORIGIN',
+    '\t\tReferrer-Policy strict-origin-when-cross-origin',
+    '\t\tCross-Origin-Opener-Policy same-origin',
+    '\t\tStrict-Transport-Security "max-age=31536000; includeSubDomains"',
+    '\t\tPermissions-Policy "geolocation=(), camera=(), microphone=(), payment=()"',
+    '\t\t-Server',
+    '\t}',
+    '}',
+    '',
+    '# ------------------------------------------------------------',
+    '# Layanan (diatur lewat panel)',
+    '# ------------------------------------------------------------'
+  ];
+  const badan = state.layanan.filter(l => l.aktif && hostDaftar(l.host).length).map(blokUntuk);
+  const kaki = [
+    '',
+    '# ------------------------------------------------------------',
+    '# Subdomain yang belum dipetakan -> jawab rapi, jangan bocor',
+    '# (wildcard satu tingkat saja)',
+    '# ------------------------------------------------------------',
+    'http://*.clusternet.my.id {',
+    '\timport http-umum',
+    '\trespond "Subdomain ini belum dipetakan di server." 404',
+    '}',
+    '',
+    '# ------------------------------------------------------------',
+    '# Fallback untuk akses langsung lewat IP/port LAN',
+    '# ------------------------------------------------------------',
+    'http://:80 {',
+    '\timport http-umum',
+    '\trespond "Web router aktif. Gunakan nama domain yang benar." 404',
+    '}'
+  ];
+  el('teks-hasil').value = kepala.concat(badan).concat(kaki).join('\n') + '\n';
+  el('teks-manifest').value = hasilkanManifest();
+  renderPanduanBelum();
+}
+
+// ============================================================
+// Manifest dasbor (situs/layanan.json)
+// ============================================================
+// Dasbor clusternet.my.id tidak lagi menulis kartunya di index.html: berkas
+// situs/dasbor.js membacanya dari situs/layanan.json. Berkas itu dihasilkan di
+// sini, jadi satu baris bertanda "dasbor" di tab Layanan langsung muncul
+// sebagai kartu setelah diterapkan - tanpa menyunting HTML lagi.
+function urlDasbor(l) {
+  const host = hostDaftar(l.host)[0] || '';
+  const jalur = String(l.jalur || '').trim();
+  return 'https://' + host + (jalur ? (jalur.startsWith('/') ? jalur : '/' + jalur) : '');
+}
+
+function hasilkanManifest() {
+  const isi = {
+    diperbarui: new Date().toISOString().slice(0, 10),
+    layanan: state.layanan
+      .filter(l => l.aktif && l.dasbor && hostDaftar(l.host).length)
+      .map(l => ({
+        judul: String(l.judul || l.nama || '').trim(),
+        ikon: String(l.ikon || '').trim(),
+        url: urlDasbor(l),
+        deskripsi: String(l.deskripsi || '').trim()
+      }))
+  };
+  return JSON.stringify(isi, null, 2) + '\n';
+}
+
+function renderPanduanBelum() {
+  const wadah = el('daftar-belum-panduan');
+  const daftar = [];
+  state.layanan.filter(l => l.aktif).forEach(l => hostDaftar(l.host).forEach(h => daftar.push(h)));
+  wadah.innerHTML =
+    `<div class="pesan info">Pastikan nama-nama ini ada di tabel panduan:<br><span class="mono">${daftar.map(esc).join('<br>')}</span></div>`;
+}
+
+// ============================================================
+// Terapkan ke ZimaOS (deploy via zima-deployer)
+// ============================================================
+el('kotak-terapkan').style.display = 'block';
+const KUNCI_TOKEN_DEPLOY = 'panel-hosting-deploy-token';
+el('terapkan-token').value = localStorage.getItem(KUNCI_TOKEN_DEPLOY) || '';
+el('terapkan-token').addEventListener('change', () => {
+  try { localStorage.setItem(KUNCI_TOKEN_DEPLOY, el('terapkan-token').value); } catch (e) {}
+});
+
+function tampilkanHasilTerapkan(html) { el('hasil-terapkan').innerHTML = html; }
+
+async function panggilDeployer(jalur, opsi) {
+  const dasar = el('terapkan-url').value.trim().replace(/\/+$/, '');
+  const r = await fetch(dasar + jalur, opsi);
+  const data = await r.json().catch(() => ({}));
+  return { status: r.status, data };
+}
+
+el('btn-cek-deployer').onclick = async () => {
+  tampilkanHasilTerapkan('Memeriksa koneksi…');
+  try {
+    const { status, data } = await panggilDeployer('/ping', {
+      headers: { Authorization: 'Bearer ' + el('terapkan-token').value },
+    });
+    if (status === 200 && data.ok) {
+      const kabarDasbor = data.dasbor
+        ? ' Folder dasbor bisa ditulis - manifest ikut terpasang.'
+        : ' <span style="color:var(--yellow)">PERINGATAN: folder dasbor tidak bisa ditulis (volume ./situs belum di-mount di deployer), jadi kartu dasbor tidak akan diperbarui.</span>';
+      tampilkanHasilTerapkan(`<span style="color:var(--green)">Terhubung ke deployer di ${esc(el('terapkan-url').value)}${data.docker ? ' - Docker siap.' : ' - PERINGATAN: Docker tidak terjangkau dari container deployer.'}</span>${kabarDasbor}`);
+    } else {
+      tampilkanHasilTerapkan(`<span style="color:var(--red)">Deployer menjawab tapi menolak: ${esc(data.error || ('HTTP ' + status))}</span>`);
+    }
+  } catch (e) {
+    tampilkanHasilTerapkan(`<span style="color:var(--red)">Tidak bisa menjangkau deployer di ${esc(el('terapkan-url').value)} - cek alamat dan jaringan.</span>`);
+  }
+};
+
+el('btn-terapkan').onclick = async () => {
+  const masalah = periksa().filter(m => m[0] === 'GAGAL');
+  if (masalah.length) {
+    tampilkanHasilTerapkan(`<span style="color:var(--red)">Masih ada ${masalah.length} masalah di tab Layanan - betulkan dulu sebelum menerapkan.</span>`);
+    return;
+  }
+  if (!el('terapkan-token').value.trim()) {
+    tampilkanHasilTerapkan('<span style="color:var(--red)">Token deploy belum diisi.</span>');
+    el('terapkan-token').focus();
+    return;
+  }
+  const tombol = el('btn-terapkan');
+  tombol.disabled = true;
+  tampilkanHasilTerapkan('Mengirim ke ZimaOS: validasi → pasang → restart → cek kesehatan…');
+  try {
+    hasilkan();
+    const { status, data } = await panggilDeployer('/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + el('terapkan-token').value },
+      body: JSON.stringify({ caddyfile: el('teks-hasil').value, layanan: el('teks-manifest').value }),
+    });
+    if (data.ok) {
+      const kabarManifest = data.manifest === 'ok'
+        ? ' Manifest dasbor ikut terpasang.'
+        : (data.manifest ? ` <span style="color:var(--yellow)">Manifest dasbor tidak terpasang: ${esc(data.manifest)}</span>` : '');
+      tampilkanHasilTerapkan(`<span style="color:var(--green)"><strong>Berhasil diterapkan.</strong></span> ${esc(data.pesan || '')}${kabarManifest} <a href="https://clusternet.my.id" target="_blank">Cek situs</a>`);
+    } else if (status === 401) {
+      tampilkanHasilTerapkan('<span style="color:var(--red)">Token ditolak (401). Samakan dengan DEPLOY_TOKEN di zima-hosting/.env di ZimaOS.</span>');
+    } else {
+      const rinci = data.detail ? `<details><summary>Rincian teknis</summary><pre class="mono" style="white-space:pre-wrap">${esc(data.detail)}</pre></details>` : '';
+      tampilkanHasilTerapkan(`<span style="color:var(--red)"><strong>Gagal pada tahap ${esc(data.tahap || 'unknown')}.</strong></span> ${esc(data.error || '')}${data.rollback ? ' <strong>Konfigurasi lama sudah dipulihkan otomatis.</strong>' : ''}${rinci}`);
+    }
+  } catch (e) {
+    tampilkanHasilTerapkan(`<span style="color:var(--red)">Gagal mengirim: ${esc(String(e))}</span>`);
+  } finally {
+    tombol.disabled = false;
+  }
+};
+
+// ============================================================
+// Salin / unduh
+// ============================================================
+async function salin(teks, pesanSukses) {
+  try {
+    await navigator.clipboard.writeText(teks);
+    el('status-salin').innerHTML = `<span style="color:var(--green)">${esc(pesanSukses)}</span>`;
+  } catch (e) {
+    const t = el('teks-hasil');
+    t.removeAttribute('readonly'); t.select(); document.execCommand('copy'); t.setAttribute('readonly', '');
+    el('status-salin').innerHTML = '<span style="color:var(--yellow)">Disalin lewat cara cadangan (izin papan klip ditolak browser).</span>';
+  }
+}
+el('btn-hasilkan').onclick = hasilkan;
+el('btn-salin').onclick = () => salin(el('teks-hasil').value, 'Caddyfile disalin - tempel ke zima-hosting/Caddyfile di ZimaOS.');
+el('btn-manifest-ulang').onclick = hasilkan;
+el('btn-salin-manifest').onclick = () => salin(el('teks-manifest').value, 'Manifest disalin - tempel ke zima-hosting/situs/layanan.json.');
+el('btn-unduh-manifest').onclick = () => {
+  const blob = new Blob([el('teks-manifest').value], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'layanan.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+el('btn-salin-restart').onclick = () => salin('docker compose restart caddy\nnode validasi-hosting.mjs\n', 'Perintah disalin.');
+el('btn-unduh').onclick = () => {
+  const blob = new Blob([el('teks-hasil').value], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Caddyfile';
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+// ============================================================
+// Impor Caddyfile
+// ============================================================
+el('btn-buka-impor-caddy').onclick = () => { const k = el('kartu-impor-caddy'); k.style.display = k.style.display === 'none' ? 'block' : 'none'; };
+el('btn-tutup-impor-caddy').onclick = () => { el('kartu-impor-caddy').style.display = 'none'; };
+
+function bacaCaddyfile(teks) {
+  const hasil = [];
+  let dalam = false, kepala = '', isi = [], kedalaman = 0;
+  teks.split(/\r?\n/).forEach(mentah => {
+    if (/^\s*#/.test(mentah)) return;
+    const baris = mentah, t = baris.trim();
+    if (!dalam) {
+      if (t === '' || t === '{') { if (t === '{') { dalam = true; kepala = '(global)'; isi = []; kedalaman = 1; } return; }
+      if (t.endsWith('{')) { dalam = true; kepala = t.slice(0, -1).trim(); isi = []; kedalaman = 1; }
+      return;
+    }
+    const buka = (baris.match(/\{/g) || []).length, tutup = (baris.match(/\}/g) || []).length;
+    const baru = kedalaman + buka - tutup;
+    if (tutup > 0 && baru === 0) {
+      const sebelum = baris.split('}')[0].trim();
+      if (sebelum) isi.push(sebelum);
+      hasil.push({ kepala, isi: isi.join('\n') });
+      dalam = false; kepala = ''; isi = []; kedalaman = 0;
+      return;
+    }
+    isi.push(t); kedalaman = baru;
+  });
+
+  const layanan = [];
+  hasil.forEach(b => {
+    if (b.kepala === '(global)' || b.kepala.startsWith('(') || b.kepala === ':80') return;
+    const host = b.kepala.replace(/^https?:\/\//, '');
+    if (/^\*\./.test(host)) return;                        // blok 404 wildcard: tetap otomatis
+    const proxy = (b.isi.match(/reverse_proxy\s+(?:https:\/\/)?([^\s{]+)/) || [])[1];
+    const statis = /file_server/.test(b.isi);
+    const respond = /respond/.test(b.isi);
+    const csp = /Content-Security-Policy/.test(b.isi);
+    const access = /Access|wajib/i.test(b.isi) && /catatan|wajib/i.test(b.isi);
+    layanan.push({
+      nama: host.split(',')[0].trim().split('.')[0],
+      host,
+      jenis: statis ? 'statis' : (respond ? '404' : 'proxy'),
+      target: proxy || '',
+      skema: /reverse_proxy\s+https:\/\//.test(b.isi) ? 'https' : 'http',
+      csp,
+      access,
+      aktif: true,
+      catatan: '',
+      dasbor: false,
+      judul: host.split(',')[0].trim().split('.')[0],
+      ikon: '',
+      jalur: '',
+      deskripsi: ''
+    });
+  });
+  return layanan;
+}
+
+el('btn-terapkan-caddy').onclick = () => {
+  const teks = el('teks-impor-caddy').value;
+  const hasil = bacaCaddyfile(teks);
+  el('hasil-impor-caddy').innerHTML = hasil.length
+    ? `<div class="pesan info">Terbaca ${hasil.length} blok layanan. Pemetaan panel diganti dengan hasil bacaan ini.</div>`
+    : '<div class="pesan gagal">Tidak ada blok layanan yang terbaca. Pastikan Anda menempelkan isi Caddyfile, bukan berkas lain.</div>';
+  if (!hasil.length) return;
+  state.layanan = hasil;
+  el('teks-impor-caddy').value = '';
+  render();
+  document.querySelector('nav button[data-tab="hasil"]').click();
+  el('hasil-impor-caddy').innerHTML = '';
+};
+
+// ============================================================
+// Impor hasil pindai
+// ============================================================
+el('btn-buka-impor-pindai').onclick = () => { const k = el('kartu-impor-pindai'); k.style.display = k.style.display === 'none' ? 'block' : 'none'; };
+el('btn-tutup-impor-pindai').onclick = () => { el('kartu-impor-pindai').style.display = 'none'; };
+el('berkas-pindai').onchange = (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { el('teks-impor-pindai').value = r.result; };
+  r.readAsText(f);
+};
+
+el('btn-terapkan-pindai').onclick = () => {
+  let data;
+  try { data = JSON.parse(el('teks-impor-pindai').value); }
+  catch (e) { el('hasil-impor-pindai').innerHTML = '<div class="pesan gagal">Isi bukan JSON yang sah. Pilih berkas hasil-layanan.json yang dihasilkan pindai-layanan.ps1.</div>'; return; }
+
+  const layananPindai = Array.isArray(data) ? data : (data.layanan || []);
+  const sudah = new Set();
+  state.layanan.forEach(l => hostDaftar(l.host).forEach(h => sudah.add(h)));
+  const terpakai = new Set();
+  state.layanan.forEach(l => terpakai.add(String(l.target).replace(/^https?:\/\//, '')));
+
+  const baru = [];
+  layananPindai.forEach(s => {
+    if (!s || s.Skema === 'bukan HTTP' || !s.Port) return;
+    const alamat = (data.host || TARGET_ZIMA) + ':' + s.Port;
+    if (terpakai.has(alamat)) return;
+    const aplikasi = s.Aplikasi && s.Aplikasi !== 'tidak dikenal' && !/^API/.test(s.Aplikasi) ? s.Aplikasi : 'layanan-' + s.Port;
+    const slug = aplikasi.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const host = slug + '.clusternet.my.id';
+    if (sudah.has(host)) return;
+    const berisiko = /ttyd|terminal|shell/i.test(aplikasi + ' ' + (s.Judul || ''));
+    baru.push({
+      nama: aplikasi, host, jenis: 'proxy', target: alamat, skema: s.Skema === 'https' ? 'https' : 'http',
+      csp: false, access: berisiko, aktif: false,
+      catatan: berisiko ? 'BERBAHAYA: terminal - biarkan nonaktif kecuali di balik Access' : 'dari hasil pindai port ' + s.Port,
+      dasbor: false, judul: aplikasi, ikon: '', jalur: '', deskripsi: ''
+    });
+  });
+
+  if (baru.length) state.layanan.push(...baru);
+  el('hasil-impor-pindai').innerHTML = baru.length
+    ? `<div class="pesan info">${baru.length} layanan baru ditambahkan dalam keadaan <strong>nonaktif</strong> supaya Anda bisa memeriksa dulu: ${baru.map(b => esc(b.host)).join(', ')}</div>`
+    : '<div class="pesan info">Tidak ada layanan baru - semua port yang terdeteksi sudah terpetakan atau memang bukan HTTP.</div>';
+  render();
+};
+
+// ============================================================
+// Navigasi tab
+// ============================================================
+document.querySelectorAll('nav button[data-tab]').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('nav button[data-tab]').forEach(x => x.classList.remove('aktif'));
+    document.querySelectorAll('section').forEach(s => s.classList.remove('aktif'));
+    b.classList.add('aktif');
+    el('tab-' + b.dataset.tab).classList.add('aktif');
+    if (b.dataset.tab === 'hasil') hasilkan();
+  };
+});
+
+// Mulai
+muat();
+el('f-jenis').onchange();
+render();
+kabarMigrasi();
+</script>
+</body>
+</html>

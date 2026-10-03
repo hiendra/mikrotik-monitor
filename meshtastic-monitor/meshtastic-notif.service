@@ -1,0 +1,59 @@
+[Unit]
+Description=Notifikasi ntfy untuk node Meshtastic (offline/pulih/baterai/sinyal/gateway)
+After=network-online.target meshtastic-exporter.service
+Wants=network-online.target
+Requires=meshtastic-exporter.service
+
+[Service]
+Type=simple
+User=meshtastic
+WorkingDirectory=/opt/meshtastic-monitor
+Environment=MESH_DATA=http://127.0.0.1:9208/data.json
+# Sumber /data.json cadangan (opsional), dipisah koma: dipakai otomatis bila
+# sumber utama tak terbaca, mis. exporter di host lain.
+# Environment=MESH_DATA_CADANGAN=http://192.168.20.36:9208/data.json
+Environment=NTFY_SERVER=https://ntfy.adminforge.de
+Environment=NTFY_TOPIK=mesh-6h4v8p2rxq
+# Topik KEDUA untuk kabar yang harus benar-benar terlihat: gateway mati/pulih,
+# node LoRa terdeteksi langsung / kontak kembali, dan node offline/pulih.
+# Dipisah supaya di ponsel bisa diberi nada dering & aturan "jangan ganggu"
+# sendiri; frekuensinya jauh lebih jarang daripada kabar rutin di atas.
+# Kosongkan (NTFY_TOPIK_PENTING=) untuk kembali memakai satu topik saja.
+Environment=NTFY_TOPIK_PENTING=mesh-penting-2kevnee56c4
+Environment=NTFY_LOKAL=http://192.168.200.253:7200
+# Ambang alert. Isi "off" untuk mematikan salah satu.
+# Ambang SNR diukur gateway terhadap paket terakhir node.
+Environment=NOTIF_SNR_AMBANG=-7
+Environment=NOTIF_SNR_MARGIN=3
+# Peringatan bila hop node bertambah >= nilai ini dari titik terbaiknya.
+Environment=NOTIF_HOP_NAIK=1
+# Cakupan: "lora" = hanya node yang terdengar langsung lewat radio (bawaan).
+# Database node bisa memuat ratusan node dari broker MQTT publik; tanpa ini
+# notifikasi akan berbunyi untuk node orang lain. "semua" untuk ikut memantau MQTT.
+Environment=NOTIF_LINGKUP=lora
+# Batasi lebih ketat ke node tertentu saja (opsional), mis.:
+# Environment=NOTIF_NODE=!da5a16f8,!02ee76d0
+# Jendela tenang alarm "node hilang" setelah reset NodeDB terjadwal (detik).
+Environment=NOTIF_JENDELA_RESET=1800
+# Kabar node LoRa yang terdeteksi LANGSUNG oleh radio gateway (SNR benar-benar
+# diukur gateway sendiri - bukan paket yang menumpang MQTT). Isinya id node dan
+# kualitas sinyalnya. "0" mematikan.
+Environment=NOTIF_KONTAK_BARU=1
+# Jeda minimum sebelum kabar "kontak radio kembali" boleh diulang untuk node yang
+# sama (detik, bawaan 6 jam). Jalur paket bisa bergantian radio <-> MQTT, jadi
+# tanpa jeda ini tiap pergantian menjadi notifikasi.
+Environment=NOTIF_JEDA_KONTAK=21600
+# Gateway MATI / tidak terbaca. Diperiksa dari sisi notifier karena halaman web
+# tidak bisa memberi tahu siapa pun saat dirinya sendiri mati. Dua angka:
+#   NOTIF_BASI_GW  ambang umur data exporter yang masih dianggap sehat (detik;
+#                  "off" mematikan seluruh pemeriksaan ini)
+#   NOTIF_ABSEN_GW berapa putaran gagal berturut-turut sebelum dilaporkan
+#                  (mencegah kegagalan sesaat - mis. exporter restart - jadi alarm)
+Environment=NOTIF_BASI_GW=180
+Environment=NOTIF_ABSEN_GW=2
+ExecStart=/opt/meshtastic-monitor/venv/bin/python /opt/meshtastic-monitor/notif-meshtastic.py
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

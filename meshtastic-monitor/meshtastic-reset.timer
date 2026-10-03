@@ -1,0 +1,16 @@
+[Unit]
+Description=Jadwal reset NodeDB Meshtastic tiap 2 hari (malam hari)
+
+[Timer]
+# Tiap 2 hari pada tanggal ganjil, pukul 02:30 dini hari.
+# Catatan: tanggal 31 -> 1 menyeberang bulan jadi berselang 1 hari; tidak
+# masalah karena service memakai pengaman --jeda-min-jam 36.
+OnCalendar=*-*-1/2 02:30:00
+# Sebar sedikit agar tidak selalu tepat detik yang sama.
+RandomizedDelaySec=300
+# Bila mesin sempat mati saat jadwal, jalankan sekali setelah hidup lagi.
+Persistent=true
+Unit=meshtastic-reset.service
+
+[Install]
+WantedBy=timers.target

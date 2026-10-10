@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420" width="1600" height="420" role="img" aria-label="Ilustrasi perumahan Taman Marina">
+  <defs>
+    <linearGradient id="langit" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bcd9f2"/>
+      <stop offset="0.55" stop-color="#e6f0f8"/>
+      <stop offset="1" stop-color="#f6fbf8"/>
+    </linearGradient>
+    <linearGradient id="air" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fb6d9"/>
+      <stop offset="1" stop-color="#4f8fbb"/>
+    </linearGradient>
+    <linearGradient id="pohon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3f9d5f"/>
+      <stop offset="1" stop-color="#226b41"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="420" fill="url(#langit)"/>
+
+  <!-- matahari -->
+  <circle cx="1300" cy="95" r="46" fill="#ffe08a" opacity="0.85"/>
+  <circle cx="1300" cy="95" r="70" fill="#ffe9ac" opacity="0.35"/>
+
+  <!-- awan -->
+  <g fill="#ffffff" opacity="0.85">
+    <ellipse cx="250" cy="80" rx="70" ry="26"/>
+    <ellipse cx="310" cy="88" rx="55" ry="20"/>
+    <ellipse cx="860" cy="64" rx="80" ry="24"/>
+    <ellipse cx="925" cy="72" rx="50" ry="18"/>
+    <ellipse cx="1420" cy="140" rx="60" ry="20"/>
+  </g>
+
+  <!-- perbukitan -->
+  <path d="M0 268 C 180 205, 360 250, 540 232 C 760 210, 900 258, 1120 236 C 1330 216, 1470 252, 1600 236 L1600 300 L0 300 Z" fill="#9ec9a8" opacity="0.75"/>
+  <path d="M0 286 C 220 244, 420 282, 640 262 C 880 240, 1080 286, 1300 264 C 1430 250, 1520 268, 1600 260 L1600 320 L0 320 Z" fill="#7fb98f" opacity="0.7"/>
+
+  <!-- deretan rumah -->
+  <g>
+    <!-- rumah 1 -->
+    <g transform="translate(120,238)">
+      <path d="M0 34 L52 0 L104 34 Z" fill="#c1663f"/>
+      <rect x="10" y="34" width="84" height="56" fill="#f4efe7"/>
+      <rect x="30" y="54" width="20" height="20" fill="#8fc7e8"/>
+      <rect x="60" y="54" width="20" height="20" fill="#8fc7e8"/>
+      <rect x="44" y="70" width="16" height="20" fill="#7a5a45"/>
+    </g>
+    <!-- rumah 2 -->
+    <g transform="translate(520,252)">
+      <path d="M0 28 L44 0 L88 28 Z" fill="#a8553a"/>
+      <rect x="8" y="28" width="72" height="48" fill="#fbf6ee"/>
+      <rect x="24" y="44" width="16" height="16" fill="#8fc7e8"/>
+      <rect x="50" y="44" width="16" height="16" fill="#8fc7e8"/>
+      <rect x="38" y="58" width="14" height="18" fill="#7a5a45"/>
+    </g>
+    <!-- rumah 3 -->
+    <g transform="translate(940,244)">
+      <path d="M0 32 L48 0 L96 32 Z" fill="#c1663f"/>
+      <rect x="9" y="32" width="78" height="52" fill="#f4efe7"/>
+      <rect x="26" y="50" width="18" height="18" fill="#8fc7e8"/>
+      <rect x="54" y="50" width="18" height="18" fill="#8fc7e8"/>
+      <rect x="40" y="66" width="16" height="18" fill="#7a5a45"/>
+    </g>
+    <!-- rumah 4 -->
+    <g transform="translate(1330,256)">
+      <path d="M0 26 L42 0 L84 26 Z" fill="#a8553a"/>
+      <rect x="8" y="26" width="68" height="46" fill="#fbf6ee"/>
+      <rect x="22" y="42" width="15" height="15" fill="#8fc7e8"/>
+      <rect x="47" y="42" width="15" height="15" fill="#8fc7e8"/>
+    </g>
+  </g>
+
+  <!-- pepohonan -->
+  <g fill="url(#pohon)">
+    <g transform="translate(60,258)">
+      <rect x="7" y="34" width="8" height="24" fill="#7a5a45"/>
+      <circle cx="11" cy="22" r="24"/>
+      <circle cx="29" cy="32" r="17"/>
+    </g>
+    <g transform="translate(420,268)">
+      <rect x="6" y="28" width="7" height="20" fill="#7a5a45"/>
+      <circle cx="9" cy="18" r="20"/>
+      <circle cx="24" cy="27" r="14"/>
+    </g>
+    <g transform="translate(800,262)">
+      <rect x="7" y="32" width="8" height="22" fill="#7a5a45"/>
+      <circle cx="11" cy="20" r="22"/>
+      <circle cx="28" cy="30" r="15"/>
+    </g>
+    <g transform="translate(1210,270)">
+      <rect x="6" y="26" width="7" height="20" fill="#7a5a45"/>
+      <circle cx="9" cy="17" r="19"/>
+      <circle cx="23" cy="26" r="13"/>
+    </g>
+  </g>
+
+  <!-- taman/rumput -->
+  <rect y="300" width="1600" height="20" fill="#6aae7d"/>
+  <rect y="316" width="1600" height="8" fill="#8fbf9c" opacity="0.7"/>
+
+  <!-- air (danau) -->
+  <rect y="330" width="1600" height="90" fill="url(#air)"/>
+  <g fill="#ffffff" opacity="0.25">
+    <rect x="180" y="352" width="140" height="4" rx="2"/>
+    <rect x="520" y="372" width="200" height="4" rx="2"/>
+    <rect x="900" y="348" width="160" height="4" rx="2"/>
+    <rect x="1260" y="380" width="180" height="4" rx="2"/>
+  </g>
+
+  <!-- perahu kecil -->
+  <g transform="translate(760,352)">
+    <path d="M0 12 L44 12 L34 24 L10 24 Z" fill="#f6f1e6"/>
+    <rect x="20" y="-10" width="2.5" height="22" fill="#7a5a45"/>
+    <path d="M22 -8 L44 6 L22 6 Z" fill="#ffffff" opacity="0.9"/>
+  </g>
+</svg>

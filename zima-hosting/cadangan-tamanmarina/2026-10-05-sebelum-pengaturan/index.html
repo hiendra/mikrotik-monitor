@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dasbor Warga — Taman Marina Metland Cibitung</title>
+<meta name="description" content="Dasbor web warga Perumahan Taman Marina Metland Cibitung: informasi, pengumuman, kegiatan, layanan & pengaduan, keuangan & iuran, lingkungan realtime, dan dokumen penting.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0d2b52">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d2b52'/%3E%3Cpath d='M16 7l9 7h-2v11h-5v-6h-4v6H9V14H7z' fill='%2334d399'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="dasbor.css?v=20261005-3">
+</head>
+
+<body data-peran="warga">
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo">
+    <div class="logo-icon" aria-hidden="true">🏡</div>
+    <h2>Taman Marina</h2>
+    <p>Metland Cibitung</p>
+  </div>
+
+  <div class="peran" role="group" aria-label="Pilih tampilan peran">
+    <button type="button" class="peran-btn aktif" data-atur-peran="warga">👤 Warga</button>
+    <button type="button" class="peran-btn" data-atur-peran="pengurus">🏠 Pengurus</button>
+    <button type="button" class="peran-btn" data-atur-peran="admin">🧑‍💼 Admin</button>
+  </div>
+
+  <nav class="menu" id="menu" aria-label="Menu utama">
+    <a href="#beranda" class="aktif" data-peran="warga pengurus admin"><span class="menu-icon" aria-hidden="true">⌂</span> Beranda</a>
+    <a href="#profil" data-peran="warga"><span class="menu-icon" aria-hidden="true">👤</span> Profil Saya</a>
+    <a href="#datawarga" data-peran="pengurus admin"><span class="menu-icon" aria-hidden="true">👥</span> Data Warga</a>
+    <a href="#informasi" data-peran="warga pengurus admin"><span class="menu-icon" aria-hidden="true">📄</span> Informasi</a>
+    <a href="#kegiatan" data-peran="warga pengurus admin"><span class="menu-icon" aria-hidden="true">📅</span> Kegiatan Warga</a>
+    <a href="#pengaduan" data-peran="warga pengurus admin"><span class="menu-icon" aria-hidden="true">🎧</span> Layanan &amp; Pengaduan</a>
+    <a href="#fasilitas" data-peran="warga pengurus"><span class="menu-icon" aria-hidden="true">🌳</span> Fasilitas Lingkungan</a>
+    <a href="#iuran" data-peran="warga pengurus admin"><span class="menu-icon" aria-hidden="true">💳</span> Keuangan &amp; Iuran</a>
+    <a href="#laporan" data-peran="pengurus"><span class="menu-icon" aria-hidden="true">📊</span> Laporan RT</a>
+    <a href="#dokumen" data-peran="warga pengurus"><span class="menu-icon" aria-hidden="true">📁</span> Dokumen Penting</a>
+    <a href="#forum" data-peran="warga"><span class="menu-icon" aria-hidden="true">💬</span> Forum Warga</a>
+    <a href="#umkm" data-peran="warga"><span class="menu-icon" aria-hidden="true">🏪</span> UMKM &amp; Iklan</a>
+    <a href="#kontak" data-peran="warga pengurus admin"><span class="menu-icon" aria-hidden="true">☎</span> Kontak</a>
+    <a href="#pengaturan" data-peran="admin"><span class="menu-icon" aria-hidden="true">⚙️</span> Pengaturan Sistem</a>
+    <a href="#pengguna" data-peran="pengurus admin"><span class="menu-icon" aria-hidden="true">🧑‍🤝‍🧑</span> Kelola Pengguna</a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <span aria-hidden="true">🌱</span>
+    <b>Taman Marina<br>Metland Cibitung</b>
+    <em>"Jaga Lingkungan,<br>Jaga Kebersamaan"</em>
+  </div>
+</aside>
+
+<div class="overlay" id="overlay" hidden></div>
+
+<!-- ============ MAIN ============ -->
+<div class="main">
+
+  <header class="topbar">
+    <button class="mobile-menu" id="menuBtn" type="button" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">☰</button>
+
+    <div class="search">
+      <span aria-hidden="true">🔍</span>
+      <input id="cari" type="search" placeholder="Cari informasi..." aria-label="Cari informasi">
+    </div>
+
+    <div class="user">
+      <button class="notification" id="notif" type="button" aria-label="Notifikasi">
+        🔔<span class="notif-badge" aria-hidden="true">2</span>
+      </button>
+
+      <div class="avatar" id="avatar" aria-hidden="true">TM</div>
+
+      <div class="user-info">
+        <b id="namaPengguna">Warga Taman Marina</b><br>
+        <small id="subPengguna">RT 004 / RW 020</small>
+      </div>
+
+      <span class="peran-badge" id="peranBadge">Warga</span>
+
+      <span class="sesi" id="tmAreaSesi"></span>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="beranda">
+      <div class="hero-isi">
+        <span class="hero-kecil">Selamat Datang di</span>
+        <h1>Taman Marina</h1>
+        <h2>Metland Cibitung</h2>
+        <p>Satu komunitas, satu tujuan.<br>Lingkungan yang aman, nyaman, dan harmonis.</p>
+        <div class="hero-tagline">"Jangan Menua Tanpa Cerita"</div>
+      </div>
+    </section>
+
+    <!-- ============ STATISTIK ============ -->
+    <section class="stats" aria-label="Ringkasan">
+      <div class="card stat">
+        <div class="stat-icon blue" aria-hidden="true">👥</div>
+        <div>
+          <small>Total Warga</small>
+          <strong data-teks='{"warga":"1.248","pengurus":"312","admin":"1.248"}'>1.248</strong>
+          <small data-teks='{"warga":"KK aktif","pengurus":"KK di RT 004","admin":"KK se-RW 020"}'>KK aktif</small>
+        </div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-icon green" aria-hidden="true">🏠</div>
+        <div>
+          <small>RT / RW</small>
+          <strong>004 / 020</strong>
+          <small>Taman Marina</small>
+        </div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-icon red" aria-hidden="true">⚠️</div>
+        <div>
+          <small>Pengaduan Aktif</small>
+          <strong data-teks='{"warga":"2","pengurus":"5","admin":"12"}'>2</strong>
+          <small>dalam proses</small>
+        </div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-icon orange" aria-hidden="true">📅</div>
+        <div>
+          <small>Kegiatan</small>
+          <strong>3</strong>
+          <small>7 hari ke depan</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GRID UTAMA ============ -->
+    <div class="dashboard-grid">
+
+      <!-- KOLOM 1 -->
+      <div class="kolom">
+        <section class="card" id="informasi" data-peran="warga pengurus admin">
+          <div class="section-title">
+            <h3>📢 Informasi Terbaru</h3>
+            <a href="#informasi">Lihat Semua</a>
+          </div>
+
+          <div class="news" id="daftar-informasi">
+            <article class="news-item">
+              <div class="news-image" aria-hidden="true">🌳</div>
+              <div>
+                <div class="date">04 Okt 2026</div>
+                <h4>Jadwal Kerja Bakti Lingkungan</h4>
+                <p>Kerja bakti lingkungan dilaksanakan Minggu, 12 Oktober 2026 pukul 06.30 WIB.</p>
+              </div>
+            </article>
+
+            <article class="news-item">
+              <div class="news-image" aria-hidden="true">💧</div>
+              <div>
+                <div class="date">02 Okt 2026</div>
+                <h4>Informasi Pemadaman Air</h4>
+                <p>Pemberitahuan perbaikan jaringan air lingkungan.</p>
+              </div>
+            </article>
+
+            <article class="news-item">
+              <div class="news-image" aria-hidden="true">🌱</div>
+              <div>
+                <div class="date">30 Sep 2026</div>
+                <h4>Perbaikan Taman Blok A</h4>
+                <p>Pekerjaan perawatan taman dimulai hari ini.</p>
+              </div>
+            </article>
+
+            <article class="news-item">
+              <div class="news-image" aria-hidden="true">🛡️</div>
+              <div>
+                <div class="date">28 Sep 2026</div>
+                <h4>Pengumuman Keamanan</h4>
+                <p>Warga diimbau memastikan pintu dan jendela terkunci.</p>
+              </div>
+            </article>
+          </div>
+
+          <p class="kosong" id="kosong" hidden>Tidak ada informasi yang cocok.</p>
+        </section>
+
+        <section class="card quick" data-peran="warga pengurus admin">
+          <div class="section-title"><h3>⚡ Akses Cepat</h3></div>
+          <div class="quick-grid">
+            <a class="quick-btn" href="#iuran"><span aria-hidden="true">💳</span> Bayar Iuran</a>
+            <a class="quick-btn" href="#pengaduan"><span aria-hidden="true">📣</span> Pengaduan</a>
+            <a class="quick-btn" href="#kontak"><span aria-hidden="true">🛡️</span> Keamanan</a>
+            <a class="quick-btn" href="#kegiatan"><span aria-hidden="true">📅</span> Kegiatan</a>
+            <a class="quick-btn" href="#kontak"><span aria-hidden="true">☎️</span> Kontak</a>
+          </div>
+        </section>
+
+        <!-- PROFIL SAYA (Warga) -->
+        <section class="card" id="profil" data-peran="warga">
+          <div class="section-title">
+            <h3>👤 Profil Saya</h3>
+            <span class="sumber">Data contoh</span>
+          </div>
+
+          <dl class="definisi">
+            <div><dt>Nama Kepala Keluarga</dt><dd>Hendra Hermawan</dd></div>
+            <div><dt>Nomor Kartu Keluarga</dt><dd>3216••••••••0003</dd></div>
+            <div><dt>Alamat</dt><dd>Blok Q No. 03, RT 004 / RW 020</dd></div>
+            <div><dt>Status Tempat Tinggal</dt><dd>Pemilik</dd></div>
+            <div><dt>Nomor WhatsApp</dt><dd>0812-••••-••••</dd></div>
+          </dl>
+
+          <h4 class="sub-judul">Anggota Keluarga</h4>
+          <div class="tabel-bungkus">
+            <table class="tabel">
+              <thead>
+                <tr><th>Nama</th><th>Hubungan</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Hendra Hermawan</td><td>Kepala Keluarga</td><td><span class="lencana hijau">Aktif</span></td></tr>
+                <tr><td>Siti Nurhaliza</td><td>Istri</td><td><span class="lencana hijau">Aktif</span></td></tr>
+                <tr><td>Raka Pratama</td><td>Anak</td><td><span class="lencana hijau">Aktif</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- KOLOM 2 -->
+      <div class="kolom">
+        <section class="card" id="pengaduan" data-peran="warga pengurus admin">
+          <div class="section-title">
+            <h3>📊 Pengaduan Warga</h3>
+            <a href="#pengaduan">Detail</a>
+          </div>
+
+          <div class="chart" role="img" aria-label="Grafik jumlah pengaduan warga tujuh hari terakhir">
+            <div class="bar-wrapper"><div class="bar" data-nilai="6" style="height:60px"></div><span class="bar-label">27</span></div>
+            <div class="bar-wrapper"><div class="bar hijau" data-nilai="4" style="height:45px"></div><span class="bar-label">28</span></div>
+            <div class="bar-wrapper"><div class="bar" data-nilai="7" style="height:75px"></div><span class="bar-label">29</span></div>
+            <div class="bar-wrapper"><div class="bar" data-nilai="10" style="height:95px"></div><span class="bar-label">30</span></div>
+            <div class="bar-wrapper"><div class="bar hijau" data-nilai="5" style="height:50px"></div><span class="bar-label">01</span></div>
+            <div class="bar-wrapper"><div class="bar" data-nilai="3" style="height:35px"></div><span class="bar-label">02</span></div>
+            <div class="bar-wrapper"><div class="bar hijau" data-nilai="3" style="height:35px"></div><span class="bar-label">03</span></div>
+          </div>
+
+          <ul class="daftar-sederhana">
+            <li><span class="lencana kuning">Proses</span> Lampu jalan Blok Q2 mati</li>
+            <li><span class="lencana kuning">Proses</span> Sampah menumpuk dekat pos keamanan</li>
+          </ul>
+        </section>
+
+        <section class="card jarak-atas" id="kegiatan" data-peran="warga pengurus admin">
+          <div class="section-title">
+            <h3>📅 Kegiatan Warga</h3>
+            <a href="#kegiatan">Lihat Semua</a>
+          </div>
+
+          <article class="activity">
+            <div class="activity-date"><strong>05</strong><small>Okt</small></div>
+            <div>
+              <h4>Senam Pagi Bersama</h4>
+              <p>📍 Marina Sport Club</p>
+              <p>🕐 06.00 - 08.00</p>
+            </div>
+          </article>
+
+          <article class="activity">
+            <div class="activity-date"><strong>12</strong><small>Okt</small></div>
+            <div>
+              <h4>Kerja Bakti Lingkungan</h4>
+              <p>📍 Seluruh Blok</p>
+              <p>🕐 06.30 - 10.00</p>
+            </div>
+          </article>
+
+          <article class="activity">
+            <div class="activity-date"><strong>19</strong><small>Okt</small></div>
+            <div>
+              <h4>Rapat RT / RW</h4>
+              <p>📍 Aula Taman Marina</p>
+              <p>🕐 19.00 - 21.00</p>
+            </div>
+          </article>
+        </section>
+      </div>
+
+      <!-- KOLOM KANAN -->
+      <div class="right-column">
+        <section class="card">
+          <div class="weather">
+            <div>
+              <h3>🌤️ Cibitung</h3>
+              <small id="cuacaStatus">Sebagian Berawan</small>
+              <div class="weather-temp"><span id="cuacaSuhu">27,4</span>°C</div>
+              <small id="cuacaDetail">Kelembapan 59% • eCO₂ 662 ppm</small>
+            </div>
+            <div class="weather-icon" aria-hidden="true">🌤️</div>
+          </div>
+        </section>
+
+        <section class="card environment" id="lingkungan">
+          <div class="section-title">
+            <h3>🌿 Info Lingkungan</h3>
+            <button class="tombol-mini" id="segarkanSensor" type="button" aria-label="Segarkan data sensor">↻</button>
+          </div>
+
+          <p class="sensor-sumber" id="sensorSumber">Sensor udara Taman Marina</p>
+
+          <div class="sensor-grid">
+            <div class="sensor-item">
+              <small>Kualitas Udara</small>
+              <strong id="sensorAqi">2</strong>
+              <span class="lencana hijau" id="sensorStatus">Baik</span>
+            </div>
+            <div class="sensor-item">
+              <small>Suhu</small>
+              <strong><span id="sensorSuhu">27,4</span>°</strong>
+              <span class="sensor-kecil">C</span>
+            </div>
+            <div class="sensor-item">
+              <small>Kelembapan</small>
+              <strong><span id="sensorLembab">59</span>%</strong>
+              <span class="sensor-kecil">RH</span>
+            </div>
+            <div class="sensor-item">
+              <small>eCO₂</small>
+              <strong><span id="sensorEco2">662</span></strong>
+              <span class="sensor-kecil">ppm</span>
+            </div>
+          </div>
+
+          <p class="sensor-waktu" id="sensorWaktu">Diperbarui —</p>
+        </section>
+
+        <section class="card" data-peran="warga pengurus admin">
+          <div class="section-title">
+            <h3>📢 Pengumuman</h3>
+            <a href="#informasi">Lihat Semua</a>
+          </div>
+
+          <div class="announcement">
+            <span class="dot" aria-hidden="true"></span>
+            <div>Pendaftaran Lomba 17 Agustus<br><small>30 Sep 2026</small></div>
+          </div>
+          <div class="announcement">
+            <span class="dot" aria-hidden="true"></span>
+            <div>Jadwal Posyandu Balita<br><small>28 Sep 2026</small></div>
+          </div>
+          <div class="announcement">
+            <span class="dot" aria-hidden="true"></span>
+            <div>Jadwal Petugas Keamanan<br><small>20 Sep 2026</small></div>
+          </div>
+        </section>
+
+        <section class="card" data-peran="warga pengurus admin">
+          <div class="section-title">
+            <h3>🔗 Link Penting</h3>
+            <a href="#kontak">Semua</a>
+          </div>
+
+          <div class="links">
+            <a href="#kontak">🏘️ Metland Cibitung</a>
+            <a href="#kontak">⚡ PLN</a>
+            <a href="#kontak">💧 PDAM</a>
+            <a href="#kontak">♻️ Pengelolaan Sampah</a>
+          </div>
+        </section>
+      </div>
+
+    </div>
+
+    <!-- ============ DATA WARGA (Pengurus/Admin) ============ -->
+    <section class="card jarak-blok" id="datawarga" data-peran="pengurus admin">
+      <div class="section-title">
+        <h3>👥 Data Warga per Blok</h3>
+        <span class="sumber">Hierarki: RW → RT → Blok → Rumah → KK</span>
+      </div>
+
+      <p class="keterangan">Taman Marina terdiri dari <b>Blok Q</b> dan <b>Blok Q1–Q11</b>, rata-rata 1–20 rumah per blok.</p>
+
+      <div class="blok-grid">
+        <a class="blok" href="#datawarga"><b>Q</b><small>18 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q1</b><small>12 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q2</b><small>20 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q3</b><small>16 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q4</b><small>14 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q5</b><small>11 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q6</b><small>9 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q7</b><small>15 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q8</b><small>13 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q9</b><small>10 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q10</b><small>17 rumah</small></a>
+        <a class="blok" href="#datawarga"><b>Q11</b><small>12 rumah</small></a>
+      </div>
+
+      <div class="tabel-bungkus jarak-atas">
+        <table class="tabel">
+          <thead>
+            <tr><th>Rumah</th><th>Kepala Keluarga</th><th>Jlh</th><th>Iuran</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Q No. 01</td><td>Budi Santoso</td><td>4</td><td><span class="lencana hijau">Lunas</span></td></tr>
+            <tr><td>Q No. 02</td><td>Andi Wijaya</td><td>3</td><td><span class="lencana merah">Belum</span></td></tr>
+            <tr><td>Q No. 03</td><td>Hendra Hermawan</td><td>3</td><td><span class="lencana hijau">Lunas</span></td></tr>
+            <tr><td>Q1 No. 05</td><td>Siti Aminah</td><td>5</td><td><span class="lencana kuning">Verifikasi</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ FASILITAS ============ -->
+    <section class="card jarak-blok" id="fasilitas" data-peran="warga pengurus">
+      <div class="section-title">
+        <h3>🌳 Fasilitas Lingkungan</h3>
+        <span class="sumber">Fasilitas bersama warga</span>
+      </div>
+
+      <div class="fasilitas-grid">
+        <div class="fasilitas"><span aria-hidden="true">🏊</span><b>Marina Sport Club</b><small>Kolam renang &amp; gym</small></div>
+        <div class="fasilitas"><span aria-hidden="true">🏛️</span><b>Aula Taman Marina</b><small>Kegiatan &amp; rapat warga</small></div>
+        <div class="fasilitas"><span aria-hidden="true">🌳</span><b>Taman &amp; Jogging Track</b><small>Ruang terbuka hijau</small></div>
+        <div class="fasilitas"><span aria-hidden="true">🏥</span><b>Posyandu Balita</b><small>Kesehatan ibu &amp; anak</small></div>
+        <div class="fasilitas"><span aria-hidden="true">🛡️</span><b>Pos Keamanan</b><small>Jaga 24 jam</small></div>
+        <div class="fasilitas"><span aria-hidden="true">♻️</span><b>Bank Sampah</b><small>Pengelolaan sampah warga</small></div>
+      </div>
+    </section>
+
+    <!-- ============ KEUANGAN & IURAN ============ -->
+    <section class="card jarak-blok" id="iuran" data-peran="warga pengurus admin">
+      <div class="section-title">
+        <h3>💳 Keuangan &amp; Iuran</h3>
+        <span class="sumber">Tagihan bulan Oktober 2026</span>
+      </div>
+
+      <div class="keuangan-grid">
+
+        <div class="tagihan">
+          <h4>Tagihan Saya</h4>
+          <ul class="baris-tagihan">
+            <li><span>Iuran Kebersihan</span><b>Rp 30.000</b></li>
+            <li><span>Iuran Keamanan</span><b>Rp 50.000</b></li>
+            <li><span>Kas RT</span><b>Rp 20.000</b></li>
+          </ul>
+          <div class="total-tagihan">
+            <span>Total</span>
+            <b>Rp 100.000</b>
+          </div>
+          <p class="status-bayar"><span class="lencana merah">Belum Bayar</span> jatuh tempo 10 Okt 2026</p>
+          <button class="tombol" type="button" id="tombolBukti" data-peran="warga">Upload Bukti Transfer</button>
+          <p class="catatan-kecil">Unggahan akan diproses setelah backend aktif; saat ini data contoh.</p>
+        </div>
+
+        <div class="metode">
+          <h4>Metode Pembayaran</h4>
+          <div class="metode-item">
+            <b>Transfer Bank — BCA</b>
+            <span>1234567890 · a.n. Taman Marina RT 004</span>
+          </div>
+          <div class="metode-item">
+            <b>Transfer Bank — Mandiri</b>
+            <span>0987654321 · a.n. Taman Marina RW 020</span>
+          </div>
+          <div class="metode-item">
+            <b>QRIS</b>
+            <span>Scan kode dari pengurus / pos keamanan</span>
+          </div>
+          <p class="catatan-kecil">Payment gateway otomatis (verifikasi tanpa bendahara) direncanakan pada tahap berikutnya.</p>
+        </div>
+
+        <div class="transparansi">
+          <h4>Transparansi Keuangan</h4>
+          <div class="baris-ringkas"><span>Pemasukan</span><b>Rp 10.000.000</b></div>
+          <div class="batang-keuangan"><div class="isi" style="width:100%"></div></div>
+          <div class="baris-ringkas"><span>Pengeluaran</span><b>Rp 4.250.000</b></div>
+          <div class="batang-keuangan"><div class="isi keluar" style="width:43%"></div></div>
+          <div class="baris-ringkas total"><span>Saldo</span><b>Rp 15.750.000</b></div>
+          <p class="catatan-kecil">Menampilkan rekap agregat. Rincian pribadi hanya untuk warga yang bersangkutan &amp; bendahara.</p>
+        </div>
+
+      </div>
+
+      <h4 class="sub-judul">Riwayat Pembayaran</h4>
+      <div class="tabel-bungkus">
+        <table class="tabel">
+          <thead>
+            <tr><th>Periode</th><th>Nominal</th><th>Status</th><th>Metode</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>September 2026</td><td>Rp 100.000</td><td><span class="lencana hijau">Lunas</span></td><td>Transfer BCA</td></tr>
+            <tr><td>Agustus 2026</td><td>Rp 100.000</td><td><span class="lencana hijau">Lunas</span></td><td>Transfer BCA</td></tr>
+            <tr><td>Juli 2026</td><td>Rp 100.000</td><td><span class="lencana hijau">Lunas</span></td><td>Tunai</td></tr>
+            <tr><td>Juni 2026</td><td>Rp 80.000</td><td><span class="lencana hijau">Lunas</span></td><td>Tunai</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ LAPORAN RT (Pengurus) ============ -->
+    <section class="card jarak-blok" id="laporan" data-peran="pengurus">
+      <div class="section-title">
+        <h3>📊 Laporan RT 004</h3>
+        <span class="sumber">Periode Oktober 2026</span>
+      </div>
+
+      <div class="laporan-grid">
+        <div class="laporan"><small>Total Tagihan</small><b>Rp 6.250.000</b></div>
+        <div class="laporan"><small>Sudah Dibayar</small><b>Rp 5.375.000</b></div>
+        <div class="laporan"><small>Belum Dibayar</small><b>Rp 875.000</b></div>
+        <div class="laporan"><small>Collection Rate</small><b>86%</b></div>
+      </div>
+
+      <h4 class="sub-judul">Tunggakan per Blok</h4>
+      <div class="batang-blok">
+        <div><span>Q</span><div class="batang-keuangan"><div class="isi" style="width:85%"></div></div><b>85%</b></div>
+        <div><span>Q1</span><div class="batang-keuangan"><div class="isi" style="width:100%"></div></div><b>100%</b></div>
+        <div><span>Q2</span><div class="batang-keuangan"><div class="isi keluar" style="width:78%"></div></div><b>78%</b></div>
+        <div><span>Q3</span><div class="batang-keuangan"><div class="isi" style="width:95%"></div></div><b>95%</b></div>
+        <div><span>Q11</span><div class="batang-keuangan"><div class="isi" style="width:92%"></div></div><b>92%</b></div>
+      </div>
+    </section>
+
+    <!-- ============ DOKUMEN ============ -->
+    <section class="card jarak-blok" id="dokumen" data-peran="warga pengurus">
+      <div class="section-title">
+        <h3>📁 Dokumen Penting</h3>
+        <span class="sumber">Unduhan contoh</span>
+      </div>
+
+      <div class="dokumen-grid">
+        <a class="dokumen" href="#dokumen"><span aria-hidden="true">📄</span><b>AD / ART Warga</b><small>PDF · 320 KB</small></a>
+        <a class="dokumen" href="#dokumen"><span aria-hidden="true">📊</span><b>Laporan Keuangan Bulanan</b><small>PDF · 210 KB</small></a>
+        <a class="dokumen" href="#dokumen"><span aria-hidden="true">🧾</span><b>SOP Pengaduan Warga</b><small>PDF · 140 KB</small></a>
+        <a class="dokumen" href="#dokumen"><span aria-hidden="true">🗒️</span><b>Jadwal Petugas Keamanan</b><small>PDF · 95 KB</small></a>
+      </div>
+    </section>
+
+    <!-- ============ FORUM ============ -->
+    <section class="card jarak-blok" id="forum" data-peran="warga">
+      <div class="section-title">
+        <h3>💬 Forum Warga</h3>
+        <a href="#forum">Buat Topik</a>
+      </div>
+
+      <div class="forum-list">
+        <div class="forum-topik"><b>Usul penambahan lampu penerangan Blok Q6</b><small>12 balasan · Blok Q6</small></div>
+        <div class="forum-topik"><b>Cari rekomendasi tukang servis AC</b><small>5 balasan · Warga Q2</small></div>
+        <div class="forum-topik"><b>Jadwal posyandu bulan ini</b><small>3 balasan · Kesehatan</small></div>
+      </div>
+    </section>
+
+    <!-- ============ UMKM ============ -->
+    <section class="card jarak-blok" id="umkm" data-peran="warga">
+      <div class="section-title">
+        <h3>🏪 UMKM &amp; Iklan Warga</h3>
+        <button type="button" class="tombol-mini" id="btnDaftarkanUmkm" aria-label="Daftarkan usaha">Daftarkan Usaha</button>
+      </div>
+
+      <div class="umkm-grid" id="umkmGrid">
+        <!-- Di-render otomatis dari umkm.json -->
+        <p class="catatan-kecil">Memuat daftar UMKM...</p>
+      </div>
+      <p class="catatan-kecil" id="umkmStatus" hidden></p>
+    </section>
+
+    <!-- ============ KONTAK ============ -->
+    <section class="card jarak-blok" id="kontak" data-peran="warga pengurus admin">
+      <div class="section-title">
+        <h3>☎ Kontak Pengurus</h3>
+        <span class="sumber">Data contoh</span>
+      </div>
+
+      <div class="kontak-grid">
+        <div class="kontak"><small>Ketua RT 004</small><b>Hendra Hermawan</b><a href="#kontak">0812-1111-2222</a></div>
+        <div class="kontak"><small>Ketua RW 020</small><b>Budi Santoso</b><a href="#kontak">0812-3333-4444</a></div>
+        <div class="kontak"><small>Bendahara</small><b>Siti Aminah</b><a href="#kontak">0812-5555-6666</a></div>
+        <div class="kontak"><small>Pos Keamanan</small><b>Jaga 24 jam</b><a href="#kontak">0812-7777-8888</a></div>
+        <div class="kontak"><small>Darurat (Ambulans)</small><b>118</b><a href="#kontak">Panggilan darurat</a></div>
+        <div class="kontak"><small>Pengaduan Sampah / PDAM</small><b>Pengelola Lingkungan</b><a href="#kontak">0812-9999-0000</a></div>
+      </div>
+
+      <h4 class="sub-judul">Link Penting</h4>
+      <div class="links">
+        <a href="#kontak">🏘️ Metland Cibitung</a>
+        <a href="#kontak">⚡ PLN</a>
+        <a href="#kontak">💧 PDAM</a>
+        <a href="#kontak">♻️ Pengelolaan Sampah</a>
+      </div>
+    </section>
+
+    <!-- ============ PENGATURAN SISTEM (Admin) ============ -->
+    <section class="card jarak-blok" id="pengaturan" data-peran="admin">
+      <div class="section-title">
+        <h3>⚙️ Pengaturan Sistem</h3>
+        <span class="sumber">Khusus admin · data nyata dari server</span>
+      </div>
+
+      <p class="status-baris" id="pengaturanPesan" hidden></p>
+
+      <!-- Status seluruh layanan project (di-probe server tm-auth) -->
+      <h4 class="sub-judul">Status Seluruh Sistem</h4>
+      <div class="tm-baris-atas">
+        <button type="button" class="tombol-mini" id="tmSistemSegar">↻ Segarkan Status</button>
+        <span class="catatan-kecil" id="tmSistemWaktu">Belum diperiksa</span>
+      </div>
+      <div class="sistem-grid" id="tmSistemGrid">
+        <p class="catatan-kecil">Memuat status sistem…</p>
+      </div>
+
+      <div class="pengaturan-grid jarak-atas">
+        <!-- Master jenis iuran (tersimpan di server) -->
+        <div class="pengaturan-item">
+          <div class="section-title">
+            <h4>Master Jenis Iuran</h4>
+            <button type="button" class="tombol-mini" id="tmIuranTambah">+ Tambah Jenis</button>
+          </div>
+          <div class="tabel-bungkus">
+            <table class="tabel">
+              <thead><tr><th>Jenis</th><th>Nominal (Rp)</th><th>Aktif</th><th></th></tr></thead>
+              <tbody id="tmIuranBody">
+                <tr><td colspan="4" class="catatan-kecil">Memuat…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Ambang approval (tersimpan di server) -->
+        <div class="pengaturan-item">
+          <div class="section-title">
+            <h4>Ambang Approval Pengeluaran</h4>
+            <button type="button" class="tombol-mini" id="tmAmbangTambah">+ Tambah Ambang</button>
+          </div>
+          <div id="tmAmbangDaftar"><p class="catatan-kecil">Memuat…</p></div>
+          <p class="catatan-kecil">Isi "batas atas" dengan kosong untuk ambang tanpa batas (urutan terakhir).</p>
+        </div>
+
+        <!-- Peran & hak akses NYATA dari /api/peran -->
+        <div class="pengaturan-item">
+          <h4>Peran &amp; Hak Akses (dari server)</h4>
+          <div id="tmPeranDaftar"><p class="catatan-kecil">Memuat peran…</p></div>
+        </div>
+
+        <!-- Info backend akun -->
+        <div class="pengaturan-item">
+          <h4>Info Backend Akun</h4>
+          <div id="tmBackendInfo"><p class="catatan-kecil">Memuat…</p></div>
+        </div>
+      </div>
+
+      <div class="tm-simpan-baris">
+        <button type="button" class="tombol tm-tombol-terbatas" id="tmPengaturanSimpan">Simpan Pengaturan</button>
+        <span class="catatan-kecil">Tersimpan di server (<b>/data/pengaturan.json</b>, volume tm-auth) — nilainya yang akan dipakai modul iuran berikutnya. Riwayat perubahan ada di <a href="#audit">Audit Log</a>.</span>
+      </div>
+    </section>
+    <!-- ============ AKUN SAYA ============ -->
+    <section class="card jarak-blok" id="akun">
+      <div class="section-title">
+        <h3>🔑 Akun Saya</h3>
+        <span class="sumber">Sesi masuk Anda</span>
+      </div>
+
+      <p class="status-baris" id="akunPesan" hidden></p>
+
+      <div class="tm-grid-akun">
+        <div>
+          <h4 class="sub-judul">Data Akun</h4>
+          <div id="tmProfilSaya"><p class="catatan-kecil">Belum masuk — <a href="/masuk">masuk dulu</a> untuk melihat data akun.</p></div>
+        </div>
+        <div>
+          <h4 class="sub-judul">Ganti Kata Sandi</h4>
+          <form id="tmFormSandi" autocomplete="off">
+            <div class="form-grup">
+              <label for="tmSandiLama">Sandi sekarang</label>
+              <input type="password" id="tmSandiLama" autocomplete="current-password" required>
+            </div>
+            <div class="form-grup">
+              <label for="tmSandiBaru">Sandi baru</label>
+              <input type="password" id="tmSandiBaru" autocomplete="new-password" minlength="8" required>
+            </div>
+            <div class="form-grup">
+              <label for="tmSandiUlang">Ulangi sandi baru</label>
+              <input type="password" id="tmSandiUlang" autocomplete="new-password" minlength="8" required>
+            </div>
+            <button type="submit" class="tombol">Ganti Sandi</button>
+            <p class="catatan-kecil">Setelah sandi diganti, sesi di perangkat lain otomatis dikeluarkan.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ KELOLA PENGGUNA (Pengurus/Admin) ============ -->
+    <section class="card jarak-blok" id="pengguna" hidden>
+      <div class="section-title">
+        <h3>🧑‍🤝‍🧑 Kelola Pengguna</h3>
+        <button type="button" class="tombol-mini" id="tmBtnBuat">+ Buat Akun</button>
+      </div>
+
+      <p class="status-baris" id="penggunaPesan" hidden></p>
+
+      <p class="keterangan">Peran menentukan kebutuhan yang bisa diakses: <b>Warga</b> (dasbor pribadi, iuran, pengaduan, forum, UMKM), <b>Pengurus</b> (+ data warga, verifikasi iuran, laporan, kelola akun warga), <b>Admin</b> (+ semua pengguna, ubah peran, hapus akun, audit).</p>
+
+      <div class="tabel-bungkus">
+        <table class="tabel tm-tabel-pengguna">
+          <thead>
+            <tr><th>Pengguna</th><th>Nama</th><th>Peran</th><th>Blok</th><th>Status</th><th>Terakhir Masuk</th><th>Aksi</th></tr>
+          </thead>
+          <tbody id="tmTabelPengguna">
+            <tr><td colspan="7" class="catatan-kecil">Memuat…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ AUDIT LOG (Admin) ============ -->
+    <section class="card jarak-blok" id="audit" hidden>
+      <div class="section-title">
+        <h3>🧾 Audit Log</h3>
+        <span class="sumber">30 aktivitas terakhir</span>
+      </div>
+      <ul class="daftar-sederhana audit" id="tmAuditDaftar">
+        <li class="catatan-kecil">Memuat…</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="kaki">
+    <span>Taman Marina · Metland Cibitung · tamanmarina.my.id</span>
+    <span class="kaki-kanan">Dilayani lewat Cloudflare Tunnel</span>
+  </footer>
+
+</div>
+
+<!-- ============ MODAL: BUAT AKUN ============ -->
+<div id="tmModalBuat" class="modal" role="dialog" aria-modal="true" aria-labelledby="tmModalBuatJudul" hidden>
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog" role="document">
+    <div class="modal-header">
+      <h4 id="tmModalBuatJudul">Buat Akun Baru</h4>
+      <button type="button" class="modal-close" id="tmModalBuatTutup" aria-label="Tutup">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="tmFormBuat" autocomplete="off">
+        <p class="status-baris" id="tmFormBuatPesan" hidden></p>
+        <div class="form-grup">
+          <label for="tmBuatPengguna">Nama pengguna</label>
+          <input type="text" id="tmBuatPengguna" required minlength="3" maxlength="32" pattern="[A-Za-z0-9._\-]{3,32}">
+          <small class="petunjuk-input">3-32 karakter: huruf, angka, titik, garis bawah, atau tanda hubung.</small>
+        </div>
+        <div class="form-grup">
+          <label for="tmBuatNama">Nama lengkap</label>
+          <input type="text" id="tmBuatNama" required>
+        </div>
+        <div class="form-grup">
+          <label for="tmBuatPeran">Peran</label>
+          <select id="tmBuatPeran"></select>
+          <small class="petunjuk-input" id="tmBuatPeranKet"></small>
+        </div>
+        <div class="form-grup">
+          <label for="tmBuatJabatan">Jabatan (opsional)</label>
+          <input type="text" id="tmBuatJabatan" placeholder="mis. Bendahara RT 004">
+        </div>
+        <div class="form-grup-dua">
+          <div class="form-grup">
+            <label for="tmBuatBlok">Blok</label>
+            <input type="text" id="tmBuatBlok" placeholder="mis. Q3">
+          </div>
+          <div class="form-grup">
+            <label for="tmBuatHp">No. WhatsApp</label>
+            <input type="text" id="tmBuatHp" placeholder="628…">
+          </div>
+        </div>
+        <div class="form-grup-dua">
+          <div class="form-grup">
+            <label for="tmBuatRt">RT</label>
+            <input type="text" id="tmBuatRt">
+          </div>
+          <div class="form-grup">
+            <label for="tmBuatRw">RW</label>
+            <input type="text" id="tmBuatRw">
+          </div>
+        </div>
+        <div class="form-grup">
+          <label for="tmBuatSandi">Sandi awal (opsional)</label>
+          <input type="text" id="tmBuatSandi" autocomplete="off" minlength="8" placeholder="Kosongkan = dibuat acak">
+        </div>
+        <p class="catatan-kecil">Sandi awal ditampilkan SEKALI setelah akun dibuat; pemiliknya wajib menggantinya saat masuk pertama.</p>
+        <div class="modal-aksi">
+          <button type="button" class="tombol-mini" id="tmBuatBatal">Batal</button>
+          <button type="submit" class="tombol">Buat Akun</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: UBAH AKUN ============ -->
+<div id="tmModalUbah" class="modal" role="dialog" aria-modal="true" aria-labelledby="tmModalUbahJudul" hidden>
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog" role="document">
+    <div class="modal-header">
+      <h4 id="tmModalUbahJudul">Ubah Akun</h4>
+      <button type="button" class="modal-close" id="tmModalUbahTutup" aria-label="Tutup">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="tmFormUbah" autocomplete="off">
+        <p class="status-baris" id="tmFormUbahPesan" hidden></p>
+        <input type="hidden" id="tmUbahId">
+        <div class="form-grup">
+          <label>Nama pengguna (tidak bisa diubah)</label>
+          <input type="text" id="tmUbahPengguna" disabled>
+        </div>
+        <div class="form-grup">
+          <label for="tmUbahNama">Nama lengkap</label>
+          <input type="text" id="tmUbahNama" required>
+        </div>
+        <div class="form-grup">
+          <label for="tmUbahJabatan">Jabatan</label>
+          <input type="text" id="tmUbahJabatan">
+        </div>
+        <div class="form-grup-dua">
+          <div class="form-grup">
+            <label for="tmUbahBlok">Blok</label>
+            <input type="text" id="tmUbahBlok">
+          </div>
+          <div class="form-grup">
+            <label for="tmUbahHp">No. WhatsApp</label>
+            <input type="text" id="tmUbahHp">
+          </div>
+        </div>
+        <div class="form-grup-dua">
+          <div class="form-grup">
+            <label for="tmUbahRt">RT</label>
+            <input type="text" id="tmUbahRt">
+          </div>
+          <div class="form-grup">
+            <label for="tmUbahRw">RW</label>
+            <input type="text" id="tmUbahRw">
+          </div>
+        </div>
+        <div class="form-grup" id="tmUbahWadahPeran" hidden>
+          <label for="tmUbahPeran">Peran (hanya admin)</label>
+          <select id="tmUbahPeran"></select>
+        </div>
+        <div class="form-grup form-grup-sebaris">
+          <label for="tmUbahAktif">Akun aktif (bisa masuk)</label>
+          <input type="checkbox" id="tmUbahAktif">
+        </div>
+        <p class="catatan-kecil">Menonaktifkan akun atau mengubah peran akan mengeluarkan sesinya dari semua perangkat.</p>
+        <div class="modal-aksi">
+          <button type="button" class="tombol-mini" id="tmUbahBatal">Batal</button>
+          <button type="submit" class="tombol">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: SANDI AWAL (tampil sekali) ============ -->
+<div id="tmModalSandi" class="modal" role="dialog" aria-modal="true" aria-labelledby="tmModalSandiJudul" hidden>
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog" role="document">
+    <div class="modal-header">
+      <h4 id="tmModalSandiJudul">Sandi Awal Akun</h4>
+      <button type="button" class="modal-close" id="tmModalSandiTutup" aria-label="Tutup">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="peringatan-sekali">Sandi berikut ditampilkan <b>hanya sekali</b>. Salin lalu kirimkan ke pemilik akun lewat kanal pribadi; setelah dialog ini ditutup, sandi ini tidak bisa dilihat lagi.</p>
+      <p class="tm-sandi-kotak"><b id="tmNilaiSandi"></b></p>
+      <p>Untuk akun: <b id="tmSandiUntuk"></b></p>
+      <div class="modal-aksi">
+        <button type="button" class="tombol-mini" id="tmSalinSandi">Salin</button>
+        <button type="button" class="tombol" id="tmModalSandiOk">Saya Sudah Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalUmkm" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalUmkmJudul" hidden>
+  <div class="modal-backdrop" id="modalUmkmBackdrop"></div>
+  <div class="modal-dialog" role="document">
+    <div class="modal-header">
+      <h4 id="modalUmkmJudul">Daftarkan Usaha Warga</h4>
+      <button type="button" class="modal-close" id="modalUmkmClose" aria-label="Tutup">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="formUmkm" autocomplete="off">
+        <div class="form-grup">
+          <label for="umkmNama">Nama Usaha</label>
+          <input type="text" id="umkmNama" name="nama" required>
+        </div>
+        <div class="form-grup">
+          <label for="umkmPemilik">Nama Pemilik</label>
+          <input type="text" id="umkmPemilik" name="pemilik" required>
+        </div>
+        <div class="form-grup">
+          <label for="umkmKategori">Kategori</label>
+          <select id="umkmKategori" name="kategori" required>
+            <option value="" selected disabled>Pilih kategori</option>
+            <option value="Makanan & Minuman">Makanan & Minuman</option>
+            <option value="Cuci & Setrika">Cuci & Setrika</option>
+            <option value="Teknisi Pendingin">Teknisi Pendingin</option>
+            <option value="Teknisi Elektronik">Teknisi Elektronik</option>
+            <option value="Belanja Harian">Belanja Harian</option>
+            <option value="Jasa">Jasa</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="form-grup">
+          <label for="umkmBlok">Blok</label>
+          <select id="umkmBlok" name="blok" required>
+            <option value="" selected disabled>Pilih blok</option>
+            <option value="Q">Q</option>
+            <option value="Q1">Q1</option>
+            <option value="Q2">Q2</option>
+            <option value="Q3">Q3</option>
+            <option value="Q4">Q4</option>
+            <option value="Q5">Q5</option>
+            <option value="Q6">Q6</option>
+            <option value="Q7">Q7</option>
+            <option value="Q8">Q8</option>
+            <option value="Q9">Q9</option>
+            <option value="Q10">Q10</option>
+            <option value="Q11">Q11</option>
+          </select>
+        </div>
+        <div class="form-grup">
+          <label for="umkmWA">No WhatsApp (format 628xxx)</label>
+          <input type="text" id="umkmWA" name="whatsapp" placeholder="628123456789" pattern="62\d{9,14}" required>
+        </div>
+        <div class="form-grup">
+          <label for="umkmDesk">Deskripsi Usaha</label>
+          <textarea id="umkmDesk" name="deskripsi" rows="3" required></textarea>
+        </div>
+        <div class="form-grup">
+          <label for="umkmIcon">Emoji/Icon (opsional)</label>
+          <input type="text" id="umkmIcon" name="icon" placeholder="🍜 / 🏪">
+        </div>
+        <p class="catatan-kecil">Pengajuan akan dikirim via WhatsApp ke pengurus UMKM untuk diverifikasi. Setelah disetujui, data akan masuk ke daftar.</p>
+        <div class="modal-aksi">
+          <button type="button" class="tombol-mini" id="btnUmkmBatal">Batal</button>
+          <button type="submit" class="tombol">Kirim Pengajuan via WhatsApp</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="dasbor.js?v=20261005-2"></script>
+<script src="pengguna.js?v=20261005-3"></script>
+<script src="pengaturan.js?v=20261005-3"></script>
+</body>
+</html>

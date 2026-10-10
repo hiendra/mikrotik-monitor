@@ -1,0 +1,48 @@
+{
+  "umkm": [
+    {
+      "id": 1,
+      "nama": "Warung Bu Siti",
+      "kategori": "Makanan & Minuman",
+      "blok": "Q5",
+      "icon": "\ud83c\udf5c",
+      "whatsapp": "6281211112222",
+      "deskripsi": "Nasi uduk, gorengan, aneka minuman",
+      "aktif": true,
+      "terverifikasi": true
+    },
+    {
+      "id": 2,
+      "nama": "Laundry Marina",
+      "kategori": "Cuci & Setrika",
+      "blok": "Q2",
+      "icon": "\ud83d\udc55",
+      "whatsapp": "6281233334444",
+      "deskripsi": "Cuci kiloan, cuci satuan & setrika",
+      "aktif": true,
+      "terverifikasi": true
+    },
+    {
+      "id": 3,
+      "nama": "Servis AC Pak Andi",
+      "kategori": "Teknisi Pendingin",
+      "blok": "Q9",
+      "icon": "\ud83d\udd27",
+      "whatsapp": "6281255556666",
+      "deskripsi": "Servis, cuci & perbaikan AC",
+      "aktif": true,
+      "terverifikasi": true
+    },
+    {
+      "id": 4,
+      "nama": "Sayur Segar Warga",
+      "kategori": "Belanja Harian",
+      "blok": "Q1",
+      "icon": "\ud83e\udd66",
+      "whatsapp": "6281299990000",
+      "deskripsi": "Sayur segar, buah & kebutuhan harian",
+      "aktif": true,
+      "terverifikasi": true
+    }
+  ]
+}

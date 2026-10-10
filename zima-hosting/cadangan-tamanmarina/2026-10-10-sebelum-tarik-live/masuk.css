@@ -1,0 +1,116 @@
+/* ============================================================
+   masuk.css - halaman masuk tamanmarina.my.id/masuk
+   Palet & tipografi selaras dasbor.css. Halaman mandiri satu
+   kolom; tetap terbaca tanpa JavaScript (formulir tampil, JS
+   hanya yang mengirim ke API dan menampilkan galat).
+   ============================================================ */
+
+:root {
+  --primary: #1769e0;
+  --primary-dark: #0d2b52;
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --text: #183153;
+  --muted: #718096;
+  --border: #e4eaf2;
+  color-scheme: light;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: system-ui, "Segoe UI", Arial, Helvetica, sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px 16px;
+  background: radial-gradient(1100px 500px at 15% -10%, #1c4f8f 0%, #0c2a50 55%, #071d38 100%);
+  -webkit-text-size-adjust: 100%;
+}
+
+:focus-visible { outline: 3px solid #2475e5; outline-offset: 2px; border-radius: 6px; }
+
+.kotak-masuk {
+  width: 100%;
+  max-width: 400px;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 30px 28px 26px;
+  box-shadow: 0 24px 60px rgba(4, 14, 30, .45);
+}
+
+.logo-masuk { text-align: center; margin-bottom: 18px; }
+.logo-ikon { font-size: 40px; line-height: 1; }
+.logo-masuk h1 { font-size: 19px; margin-top: 8px; color: var(--primary-dark); }
+.logo-masuk p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.petunjuk {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+
+.form-grup { margin-bottom: 14px; }
+.form-grup label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+.form-grup input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: #fff;
+}
+.form-grup input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(23, 105, 224, .14);
+}
+
+.galat {
+  background: #fee9e9;
+  color: #c02626;
+  font-size: 12px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.tombol {
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tombol:hover { background: #1259c4; }
+.tombol:disabled { opacity: .6; cursor: wait; }
+
+.kembali { text-align: center; font-size: 12px; margin-top: 16px; }
+.kembali a { color: var(--primary); text-decoration: none; }
+.kembali a:hover { text-decoration: underline; }
+
+.kaki-masuk {
+  color: #9db8d8;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.7;
+}
+.kaki-masuk a { color: #cfe0f5; text-decoration: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

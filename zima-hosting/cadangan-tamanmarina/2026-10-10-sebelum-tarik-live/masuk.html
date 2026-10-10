@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Masuk — Dasbor Warga Taman Marina Metland Cibitung</title>
+<meta name="description" content="Halaman masuk dasbor warga Taman Marina Metland Cibitung. Gunakan akun yang diberikan pengurus RT/RW.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0d2b52">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d2b52'/%3E%3Cpath d='M16 7l9 7h-2v11h-5v-6h-4v6H9V14H7z' fill='%2334d399'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="masuk.css?v=20261005-2">
+</head>
+
+<body>
+
+  <main class="kotak-masuk">
+    <div class="logo-masuk">
+      <div class="logo-ikon" aria-hidden="true">🏡</div>
+      <h1>Taman Marina</h1>
+      <p>Metland Cibitung</p>
+    </div>
+
+    <p class="petunjuk">Masuk dengan akun yang diberikan pengurus RT/RW.
+    Dasbor akan menampilkan menu sesuai peran Anda: warga, pengurus, atau admin.</p>
+
+    <form id="formMasuk" autocomplete="on">
+      <div class="form-grup">
+        <label for="pengguna">Nama pengguna</label>
+        <input type="text" id="pengguna" name="pengguna" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      </div>
+      <div class="form-grup">
+        <label for="sandi">Kata sandi</label>
+        <input type="password" id="sandi" name="sandi" autocomplete="current-password" required>
+      </div>
+      <p class="galat" id="galat" role="alert" hidden></p>
+      <button type="submit" class="tombol" id="btnMasuk">Masuk</button>
+    </form>
+
+    <p class="kembali"><a href="/">← Kembali ke dasbor</a></p>
+  </main>
+
+  <footer class="kaki-masuk">
+    <span>Taman Marina · Metland Cibitung · tamanmarina.my.id</span><br>
+    <span>Belum punya akun? Hubungi pengurus RT/RW.</span>
+  </footer>
+
+  <script src="masuk.js?v=20261005-2"></script>
+</body>
+</html>

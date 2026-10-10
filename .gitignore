@@ -72,14 +72,6 @@ meshtastic-monitor/__pycache__/
 **/__pycache__/
 meshtastic-monitor/*.log
 meshtastic-monitor/notif-meshtastic-state.json
-meshtastic-monitor/bot-meshtastic-state.json
-# Catatan site survey/drive test bot (<state>-kontak.json). Berisi kontak radio
-# mesin ini; menimpanya dari mesin lain memicu data uji jaringan yang keliru.
-meshtastic-monitor/*kontak.json
-# Penanda "bot dimatikan lewat halaman" (<state>-kendali.json). Milik MESIN yang
-# menjalankannya: kalau ikut ter-commit, bot di host lain bisa mulai dalam
-# keadaan terbungkam tanpa ada yang menyadari sebabnya.
-meshtastic-monitor/*kendali.json
 meshtastic-monitor/reset-terakhir.json
 meshtastic-monitor/catat-node.csv
 meshtastic-monitor/*.tgz
@@ -91,6 +83,11 @@ meshtastic-monitor/lacak-kerja/lacak.sqlite3
 # potongan konfigurasi yang diuji, dsb). Tidak pernah jadi sumber; jangan
 # sampai ikut ter-commit.
 .tmp-*
+
+# ==================== AREA KERJA UJI ====================
+# Bukti mentah dari sesi uji/audit (dump host, log perintah, salinan aset live,
+# berkas diff besar). Bukan berkas sumber; jangan pernah ikut ter-commit.
+.uji-tmp/
 
 # ==================== ARTEFAK UJI & PENERAPAN ====================
 # Keduanya lahir saat MENJALANKAN alat, bukan berkas sumber: salinan HTML untuk
